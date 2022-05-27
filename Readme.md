@@ -60,3 +60,10 @@ docker-compose up
 ```
 
 Now an InfluxDB is reachable over localhost:8086.
+You can post new examples via _http://localhost:5000/incomingMessages_ with json body eg. _test/dragino_ttn_payload.json_ and header
+
+```
+{
+    webhook-api-key: <yourApiKey> // see .env file
+}
+```

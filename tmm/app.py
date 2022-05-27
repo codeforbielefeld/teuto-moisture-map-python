@@ -198,7 +198,6 @@ def writeJsonToDb(json: dict):
         write_api.write(bucket=bucket, record=conductivity_point)
         write_api.write(bucket=bucket, record=temp_point)
         write_api.write(bucket=bucket, record=moisture_point)
-        write_api.flush()
 
 
 if __name__ == "__main__":
