@@ -31,7 +31,7 @@ To run the app without docker:
 Building and running the docker image:
 
     docker build . -t your/tag
-    docker run --env TMM-BUCKET=tmm-bucket --env TMM_API_KEY=foo -p 0.0.0.0:5000:5000 your/tag
+    docker run --env TMM_BUCKET=tmm-bucket --env TMM_API_KEY=foo -p 0.0.0.0:5000:5000 your/tag
 
 Make sure that port 5000 is reachable from the outside world.
 
@@ -42,3 +42,21 @@ To run all Tests in the project which start with _test_ run:
 ```
 python -m unittest discover
 ```
+
+## Setting Up a local-only environment
+
+If you want to keep everything local for development, you can keep all the values from the _.example_ files as they are for the _.env_ files.
+
+### Configure InfluxDB connection
+
+To setup the connection to a remote or local InfluxDB, configure a _config.ini_ file following the example in the _config.ini.example_.
+
+### Configure Docker InfluxDB
+
+Navigate to the _docker_ folder. Create a new .env file with the values from docker/.env.example. Then execute:
+
+```
+docker-compose up
+```
+
+Now an InfluxDB is reachable over localhost:8086.

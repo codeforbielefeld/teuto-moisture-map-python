@@ -1,0 +1,8 @@
+[influx2]
+url=http://localhost:8086
+org=teuto
+token=tmm-api-key
+timeout=6000
+connection_pool_maxsize=25
+auth_basic=false
+debug=true
