@@ -3,7 +3,7 @@ import unittest
 import json
 
 import tmm.payload.PayloadParserFactory as ppf
-from os.path import dirname, join
+from os.path import dirname
 
 class TestDraginoParser(unittest.TestCase):
 
