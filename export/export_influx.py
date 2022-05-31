@@ -9,13 +9,37 @@ range = os.environ.get('EXPORT_TIMERANGE') or "-1d"
 measurement = os.environ.get('EXPORT_MEASUREMENT') or "moisture"
 fieldname = os.environ.get('EXPORT_FIELDNAME') or "percent"
 
+range_start = os.environ.get('EXPORT_RANGE_START') or "2022-05-08T00:00:00Z"
+range_stop = os.environ.get('EXPORT_RANGE_STOP') or "2022-05-09T00:00:00Z"
+
+bucket = os.environ.get('TMM_BUCKET')
+
 def export_to_json(path_to_config="config.ini"):
 
-    value_query = 'from(bucket: "tmm-bucket") \
-    |> range(start: ' + range + ') \
-    |> filter(fn: (r) => \
-        r._measurement == "' + measurement +'" and \
-        r._field == "' + fieldname +'")'
+    value_query = 'lat = from(bucket: "tmm-bucket") \
+    |> range(start: ' + range_start + ' , stop: ' + range_stop + ') \
+    |> filter(fn: (r) => r["_measurement"] == "' + measurement +'") \
+    |> filter(fn: (r) => r["_field"] == "latitude") \
+    \
+    long = from(bucket: "tmm-bucket") \
+    |> range(start: ' + range_start + ' , stop: ' + range_stop + ') \
+    |> filter(fn: (r) => r["_measurement"] == "' + measurement +'") \
+    |> filter(fn: (r) => r["_field"] == "longitude") \
+    \
+    measurement = from(bucket: "tmm-bucket") \
+    |> range(start: ' + range_start + ' , stop: ' + range_stop + ') \
+    |> filter(fn: (r) => r["_measurement"] == "' + measurement +'") \
+    |> filter(fn: (r) => r["_field"] == "' + fieldname +'") \
+    \
+    alt = from(bucket: "tmm-bucket") \
+    |> range(start: ' + range_start + ' , stop: ' + range_stop + ') \
+    |> filter(fn: (r) => r["_measurement"] == "' + measurement +'") \
+    |> filter(fn: (r) => r["_field"] == "altitude") \
+    \
+    union(tables: [alt, lat, long, measurement]) \
+    |> group(columns: ["device"], mode: "by") \
+    |> pivot(rowKey: ["_time"], columnKey: ["_field"],  valueColumn: "_value") \
+    |> group()'
 
     map_query = 'lat = from(bucket: "tmm-bucket") \
     |> range(start: ' + range +') \
@@ -50,11 +74,14 @@ def export_to_json(path_to_config="config.ini"):
     |> pivot(rowKey: ["_time"], columnKey: ["_field"],  valueColumn: "_value") \
     |> group()'
 
-    # TODO: Implement processing of value query
     query = map_query
 
     if(query_type == 'value'):
-        query = value_query
+        if range_start != None and range_stop != None:
+            query = value_query
+        else:
+            print("Missing time range information. Quitting.")
+            return
 
     with InfluxDBClient.from_config_file(config_file=path_to_config) as client:
 
@@ -79,7 +106,8 @@ def export_to_json(path_to_config="config.ini"):
         
         elif query_type == 'value':
             valuesArray = []
-            for sensor in result:
+            # TODO: Fix handling / evaluate CSV export
+            for sensor in result[0].records:
                 for record in sensor.records:
                     jsonRecord = {}
                     jsonRecord['measurement'] = str(record.get_measurement())
@@ -93,11 +121,9 @@ def export_to_json(path_to_config="config.ini"):
             print("unknown query type: "  + str(query_type))
 
         jsonObj['timestamp'] = str(datetime.now())
-        
 
         retval = json.dumps(jsonObj)
         print(retval)
-
 
 
 args = sys.argv[1:]
