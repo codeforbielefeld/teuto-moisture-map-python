@@ -94,6 +94,7 @@ def export_to_json(path_to_config="config.ini"):
             mapdataArray = []
             for record in result[0].records:
                 jsonRecord = {}
+                jsonRecord['time'] = str(record.values["_time"])
                 jsonRecord['device'] = record.values['device']
                 jsonRecord['altitude'] = record.values['altitude']
                 jsonRecord[fieldname] = record.values[fieldname]
@@ -106,14 +107,15 @@ def export_to_json(path_to_config="config.ini"):
         
         elif query_type == 'value':
             valuesArray = []
-            # TODO: Fix handling / evaluate CSV export
-            for sensor in result[0].records:
-                for record in sensor.records:
-                    jsonRecord = {}
-                    jsonRecord['measurement'] = str(record.get_measurement())
-                    jsonRecord[record.get_field()] = str(record.get_value())
-                    jsonRecord['timestamp'] = str(record.get_time())
-                    jsonRecord['deviceId'] = str(record.values['device'])
+            for record in result[0].records:
+                jsonRecord = {}
+                jsonRecord['time'] = str(record.values["_time"])
+                jsonRecord['device'] = record.values['device']
+                jsonRecord['altitude'] = record.values['altitude']
+                jsonRecord[fieldname] = record.values[fieldname]
+                jsonRecord['latitude'] = record.values['latitude']
+                jsonRecord['longitude'] = record.values['longitude']
+                if (record.values[fieldname] != None):
                     valuesArray.append(jsonRecord)
             jsonObj['values'] = valuesArray
 
