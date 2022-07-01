@@ -1,5 +1,5 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
-#import tmm.app
-import tmm.payload.PayloadParser
+#import app
+import ttn.payload.PayloadParser

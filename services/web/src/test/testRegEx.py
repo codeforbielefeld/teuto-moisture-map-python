@@ -1,6 +1,6 @@
 import unittest
 
-from tmm.payload.PayloadParser import PayloadParser
+from ttn.payload.PayloadParser import PayloadParser
 
 """
 This class tests the regular expressions used to extract numbers and units of measurements from strings.

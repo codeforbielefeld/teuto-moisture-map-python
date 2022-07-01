@@ -22,48 +22,41 @@ As of now the app has only been tested with the Dragino Moisture Sensor (<http:/
 
 If everything has been set up correctly, you should see measurements piling into your selected InfluxDB bucket :-)
 
-## Running the app
+## Running the app without Docker
 
-To run the app without docker:
-
-    python app.py
-
-Building and running the docker image:
-
-    docker build . -t your/tag
-    docker run --env TMM_BUCKET=tmm-bucket --env TMM_API_KEY=foo -p 0.0.0.0:5000:5000 your/tag
-
-Make sure that port 5000 is reachable from the outside world.
+TODO
 
 ## Running Tests
 
 To run all Tests in the project which start with _test_ run:
 
-```
-python -m unittest discover
-```
 
-## Setting Up a local-only environment
+    python -m unittest discover
 
-If you want to keep everything local for development, you can keep all the values from the _.example_ files as they are for the _.env_ files.
+## Running the application in production mode
+TODO
 
-### Configure InfluxDB connection
+## Running the application in development mode
+Simply run:
 
-To setup the connection to a remote or local InfluxDB, configure a _config.ini_ file following the example in the _config.ini.example_.
+    docker compose up
 
-### Configure Docker InfluxDB
+Now the TMM web server over localhost:5000 and an InfluxDB is reachable over localhost:8086.
 
-Navigate to the _docker_ folder. Create a new .env file with the values from docker/.env.example. Then execute:
+## Post data:
+You can post new examples via http://localhost:5000/incomingMessages with json body eg. `services/web/src/test/dragino_ttn_payload.json` and header `{ webhook-api-key: <yourApiKey> // see .dev.env file }`
+    
 
-```
-docker-compose up
-```
+E.g. from the `services/web/src/test` directory run:
 
-Now an InfluxDB is reachable over localhost:8086.
-You can post new examples via _http://localhost:5000/incomingMessages_ with json body eg. _test/dragino_ttn_payload.json_ and header
+    curl -X POST http://localhost:5000/incomingMessages -H "webhook-api-key: tmm-api-key" -H "Content-Type: application/json" -d @dragino_ttn_payload.json
 
-```
-{
-    webhook-api-key: <yourApiKey> // see .env file
-}
-```
+## Receiving data
+Navigate to http://localhost:5000/moistureData to recive the latest moisture data, (will probably be empty).
+
+## Insert test data
+Navigate to http://localhost:5000/insertTestData to insert some random test for the last days
+
+## Cofiguration
+Configuration is done via the .dev.env file
+

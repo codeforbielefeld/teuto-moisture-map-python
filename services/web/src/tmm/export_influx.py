@@ -1,46 +1,48 @@
 from datetime import datetime
 import json
-from influxdb_client import InfluxDBClient
-import sys
 import os
 
-query_type = os.environ.get('EXPORT_QUERY_TYPE') or 'value'
+from common.influx import get_influx_client
+
+query_type = os.environ.get('EXPORT_QUERY_TYPE') or 'map'
 range = os.environ.get('EXPORT_TIMERANGE') or "-1d"
 measurement = os.environ.get('EXPORT_MEASUREMENT') or "moisture"
 fieldname = os.environ.get('EXPORT_FIELDNAME') or "percent"
+bucket = os.environ.get("TMM_BUCKET")
 
-def export_to_json(path_to_config="config.ini"):
 
-    value_query = 'from(bucket: "tmm-bucket") \
+def export_moisture_map_data():
+
+    value_query = 'from(bucket: "' + bucket + '") \
     |> range(start: ' + range + ') \
     |> filter(fn: (r) => \
-        r._measurement == "' + measurement +'" and \
-        r._field == "' + fieldname +'")'
+        r._measurement == "' + measurement + '" and \
+        r._field == "' + fieldname + '")'
 
-    map_query = 'lat = from(bucket: "tmm-bucket") \
-    |> range(start: ' + range +') \
-    |> filter(fn: (r) => r["_measurement"] == "' + measurement +'") \
+    map_query = 'lat = from(bucket: "' + bucket + '") \
+    |> range(start: ' + range + ') \
+    |> filter(fn: (r) => r["_measurement"] == "' + measurement + '") \
     |> filter(fn: (r) => r["_field"] == "latitude") \
     |> aggregateWindow(every: 1d , fn: last) \
     |> last() \
     \
-    long = from(bucket: "tmm-bucket") \
-    |> range(start: ' + range +') \
-    |> filter(fn: (r) => r["_measurement"] == "' + measurement +'") \
+    long = from(bucket: "' + bucket + '") \
+    |> range(start: ' + range + ') \
+    |> filter(fn: (r) => r["_measurement"] == "' + measurement + '") \
     |> filter(fn: (r) => r["_field"] == "longitude") \
     |> aggregateWindow(every: 1d , fn: last) \
     |> last() \
     \
-    measurement = from(bucket: "tmm-bucket") \
-    |> range(start: ' + range +') \
-    |> filter(fn: (r) => r["_measurement"] == "' + measurement +'") \
-    |> filter(fn: (r) => r["_field"] == "' + fieldname +'") \
+    measurement = from(bucket: "' + bucket + '") \
+    |> range(start: ' + range + ') \
+    |> filter(fn: (r) => r["_measurement"] == "' + measurement + '") \
+    |> filter(fn: (r) => r["_field"] == "' + fieldname + '") \
     |> aggregateWindow(every: 1d , fn: last) \
     |> last() \
     \
-    alt = from(bucket: "tmm-bucket") \
-    |> range(start: ' + range +') \
-    |> filter(fn: (r) => r["_measurement"] == "' + measurement +'") \
+    alt = from(bucket: "' + bucket + '") \
+    |> range(start: ' + range + ') \
+    |> filter(fn: (r) => r["_measurement"] == "' + measurement + '") \
     |> filter(fn: (r) => r["_field"] == "altitude") \
     |> aggregateWindow(every: 1d , fn: last) \
     |> last() \
@@ -56,7 +58,7 @@ def export_to_json(path_to_config="config.ini"):
     if(query_type == 'value'):
         query = value_query
 
-    with InfluxDBClient.from_config_file(config_file=path_to_config) as client:
+    with get_influx_client() as client:
 
         query_api = client.query_api()
         result = query_api.query(query=query)
@@ -74,9 +76,9 @@ def export_to_json(path_to_config="config.ini"):
                 jsonRecord['longitude'] = record.values['longitude']
                 if (record.values[fieldname] != None):
                     mapdataArray.append(jsonRecord)
-            
+
             jsonObj['records'] = mapdataArray
-        
+
         elif query_type == 'value':
             valuesArray = []
             for sensor in result:
@@ -90,17 +92,8 @@ def export_to_json(path_to_config="config.ini"):
             jsonObj['values'] = valuesArray
 
         else:
-            print("unknown query type: "  + str(query_type))
+            print("unknown query type: " + str(query_type))
 
         jsonObj['timestamp'] = str(datetime.now())
-        
 
-        retval = json.dumps(jsonObj)
-        print(retval)
-
-
-
-args = sys.argv[1:]
-path = args[0]
-
-export_to_json(path_to_config=path)
+        return json.dumps(jsonObj)
