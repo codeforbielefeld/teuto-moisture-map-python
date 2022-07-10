@@ -1,8 +1,8 @@
 from typing import List
-from datetime import timedelta, date
+from datetime import datetime, timedelta, date
 
 import rasterio as ri
-from pyproj import Transformer
+from pyproj import Transformer, CRS
 
 from models import Measurement
 from influx import get_devices, write_moisture
@@ -22,7 +22,8 @@ def fetch_dataset(day: date):
     return ri.open(url)
 
 
-def get_moisture_single(day: str, lon: float, lat: float):
+
+def get_moisture_single(day: date, lon: float, lat: float):
     with fetch_dataset(day) as src:
         x, y = transformer.transform([lon], [lat])
         rm, cm = src.shape
@@ -33,11 +34,27 @@ def get_moisture_single(day: str, lon: float, lat: float):
         return data
 
 
-def get_moisture(day: str, lons: List[float], lats: List[float]):
+def get_moisture(day: date, lons: List[float], lats: List[float]):
     with fetch_dataset(day) as src:
         x, y = transformer.transform(lons, lats)
         xy = list(map(lambda x, y: [x, y], x, y))
         data = list(map(lambda a: a[0], src.sample(xy, 1)))
+        return data
+
+def fetch_rain(hour: datetime):    
+    day_str = hour.strftime("%Y%m%d")
+    hour_str = hour.strftime("%Y%m%d-%H")    
+    url = f"/vsitar/vsicurl/https://opendata.dwd.de/climate_environment/CDC/grids_germany/hourly/radolan/recent/asc/RW-{day_str}.tar.gz/RW_{hour_str}50.asc"
+    # See: https://gdal.org/user/virtual_file_systems.html
+    return ri.open(url)
+
+radolan_prj = 'PROJCS["Stereographic_North_Pole",GEOGCS["GCS_unnamed ellipse",DATUM["D_unknown",SPHEROID["Unknown",6370040,0]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Stereographic_North_Pole"],PARAMETER["standard_parallel_1",60],PARAMETER["central_meridian",10],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["Meter",1]]'
+radolan_transformer = Transformer.from_crs(wgs84, CRS(radolan_prj), always_xy=True)
+def get_rain(hour: datetime, lons: List[float], lats: List[float]):
+    with fetch_rain(hour) as src:
+        xs, ys = radolan_transformer.transform(lons, lats)
+        xy = list(map(lambda x, y: [x, y], xs, ys))
+        data = list(map(lambda a: a[0]*0.1, src.sample(xy, 1)))
         return data
 
 
@@ -76,3 +93,7 @@ if __name__ == "__main__":
             req_date = start + timedelta(days=day_since_start)
             moisture = get_moisture_single(req_date, lon, lat)
             print(f"Moisture on {req_date.isoformat()}: {moisture} %")
+
+        for i in range(24):
+            hour = datetime(2022,6,30,i,0,0)
+            print(f"Niederschlag {hour.strftime('%d.%m.%Y %H:%M')} : {get_rain(hour, [7.6282,8],[51.9616,52])}")
