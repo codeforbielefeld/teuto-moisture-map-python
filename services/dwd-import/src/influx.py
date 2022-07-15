@@ -4,7 +4,7 @@ from typing import List
 
 from influxdb_client import InfluxDBClient, Point
 
-from models import Device, Measurement
+from models import Device, MoistureMeasurement
 
 
 bucket = os.environ.get("TMM_BUCKET")
@@ -37,7 +37,7 @@ def get_devices() -> List[Device]:
                         result[0].records))
 
 
-def write_moisture(measurements: List[Measurement]):
+def write_moisture(measurements: List[MoistureMeasurement]):
     points = map(lambda data:
                  Point("dwd_moisture")
                  .tag("device", data.device.device_id)

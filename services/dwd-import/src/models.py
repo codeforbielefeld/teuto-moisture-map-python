@@ -8,7 +8,25 @@ class Device(NamedTuple):
     lat: float
 
 
-class Measurement(NamedTuple):
+class MoistureMeasurement(NamedTuple):
     device: Device
     percent: int
     date: date
+
+class DWDStation(NamedTuple):
+    station_id: str
+    data_since: date
+    data_until: date
+    height: int
+    lon: float
+    lat: float
+    name: str
+    state: str
+    historic_precipitation_dataset_url: str
+
+class PrecipitationMeasurment(NamedTuple):
+    station: DWDStation
+    date: date
+    preciptation: float # DWD field: RS
+    form: int # DWD field: RSF
+    quality: int # DWD field: QN_6
