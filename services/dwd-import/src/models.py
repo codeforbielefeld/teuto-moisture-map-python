@@ -27,7 +27,7 @@ class DWDStation(NamedTuple):
 class PrecipitationMeasurment(NamedTuple):
     station: DWDStation
     date: date
-    preciptation: float # DWD field: RS
+    precipitation: float # DWD field: RS
     form: int # DWD field: RSF
     quality: int # DWD field: QN_6
 

@@ -111,7 +111,7 @@ def neares_active_station(lon: float, lat: float) -> DWDStation:
     return min(active_stations, key=lambda station: distance(lon, lat, station.lon, station.lat))
 
 
-def get_preciptation(station: DWDStation) -> List[PrecipitationMeasurment]:
+def get_precipitation(station: DWDStation) -> List[PrecipitationMeasurment]:
     with requests.get(station.historic_precipitation_dataset_url) as resp:
         zipfile = ZipFile(BytesIO(resp.content))
         product_file_name = next(
@@ -127,7 +127,7 @@ def get_preciptation(station: DWDStation) -> List[PrecipitationMeasurment]:
                     row.get("MESS_DATUM"), "%Y%m%d").date()
                 if(rs != -999):
                     result.append(PrecipitationMeasurment(
-                        station=station, date=measurement_date, preciptation=rs, form=rsf, quality=qn))
+                        station=station, date=measurement_date, precipitation=rs, form=rsf, quality=qn))
                 else:
                     print(
                         f"Row without precipitation value! station: {station.station_id}, row: {row}")
@@ -139,7 +139,7 @@ def get_preciptation(station: DWDStation) -> List[PrecipitationMeasurment]:
 if __name__ == "__main__":
     station = neares_active_station(52, 8.53)
     print(f"Station: {station.name}, id: {station.station_id}")
-    data = get_preciptation(station)
+    data = get_precipitation(station)
     print(f"Recieved {len(data)} measurments for station. Latest 30:")
     for x in data[-30:]:
         print(f"{x.date}: {x.preciptation}")
