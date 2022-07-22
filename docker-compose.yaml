@@ -2,10 +2,13 @@ version: "3.9"
 services:
   tmm:
     build: services/web
+    depends_on:
+      - influx
     env_file:
-      - .dev.env    
+      - .dev.env
     ports:
       - "5000:5000"
+
   influx:
     image: influxdb:2.2.0-alpine
     volumes:
@@ -13,7 +16,63 @@ services:
     ports:
       - "8086:8086"
     env_file:
-      - .dev.env    
+      - .dev.env
+
+  dwd-moisture:
+    build: services/dwd-import
+    command: python dwd_import.py moisture --influx=True
+    depends_on:
+      - influx
+    env_file:
+      - .dev.env
+
+  dwd-import:
+    build: services/dwd-import
+    # We keep the container running as a dirty hack to run scheduled commands in it
+    # to avoid having to build the image beforehand
+    command: tail -F /dev/null
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.fetch_precipitaiton.schedule: "@every 30s"
+      ofelia.job-exec.fetch_precipitaiton.command: "python dwd_import.py precipitation"
+
+  scheduler:
+    image: mcuadros/ofelia:latest
+    depends_on:
+      - dwd-import
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    #labels:
+    #  ofelia.job-local.my-test-job.schedule: "@every 1m"
+    #  ofelia.job-local.my-test-job.command: "date"
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: /data/postgres
+    volumes:
+      - postgres-storage:/data/postgres
+    ports:
+      - "5432:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    depends_on:
+      - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin-storage:/var/lib/pgadmin
+
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
 
 volumes:
   influxdb-storage: {}
+  postgres-storage: {}
+  pgadmin-storage: {}

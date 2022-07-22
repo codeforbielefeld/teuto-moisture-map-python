@@ -30,3 +30,11 @@ class PrecipitationMeasurment(NamedTuple):
     preciptation: float # DWD field: RS
     form: int # DWD field: RSF
     quality: int # DWD field: QN_6
+
+class PrecipitationAverage(NamedTuple):
+    station: DWDStation
+    day_in_month: int
+    month_in_year: int
+    preciptation: float
+    since: date
+    unitl: date
