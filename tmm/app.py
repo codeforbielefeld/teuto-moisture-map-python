@@ -1,4 +1,5 @@
 # app.py
+from lib2to3.pgen2.token import ASYNC
 from flask import Flask, request
 import os
 
@@ -97,7 +98,7 @@ def writeJsonToDb(json : dict):
 
     with InfluxDBClient.from_config_file(config_file="config.ini") as client:
         
-        write_api = client.write_api(write_options=SYNCHRONOUS)
+        write_api = client.write_api(write_options=ASYNC)
 
         bat_point = create_point_with_common_attributes("battery", \
              device_id, device_brand, device_model, longitude, latitude, altitude, received_at)\
