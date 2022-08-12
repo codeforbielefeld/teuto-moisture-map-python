@@ -4,13 +4,13 @@ from influxdb_client import InfluxDBClient
 import sys
 import os
 
-query_type = os.environ.get('EXPORT_QUERY_TYPE') or 'value'
+query_type = os.environ.get('EXPORT_QUERY_TYPE') or 'map'
 range = os.environ.get('EXPORT_TIMERANGE') or "-1d"
 measurement = os.environ.get('EXPORT_MEASUREMENT') or "moisture"
 fieldname = os.environ.get('EXPORT_FIELDNAME') or "percent"
 
-range_start = os.environ.get('EXPORT_RANGE_START') or "2022-05-08T00:00:00Z"
-range_stop = os.environ.get('EXPORT_RANGE_STOP') or "2022-05-09T00:00:00Z"
+range_start = os.environ.get('EXPORT_RANGE_START') or "2022-08-05T00:00:00Z"
+range_stop = os.environ.get('EXPORT_RANGE_STOP') or "2022-08-06T00:00:00Z"
 
 bucket = os.environ.get('TMM_BUCKET')
 
@@ -86,11 +86,12 @@ def export_to_json(path_to_config="config.ini"):
     with InfluxDBClient.from_config_file(config_file=path_to_config) as client:
 
         query_api = client.query_api()
-        result = query_api.query(query=query)
-
-        jsonObj = {}
-
+        
         if query_type == 'map':
+            result = query_api.query(query=query)
+            
+            jsonObj = {}
+            
             mapdataArray = []
             for record in result[0].records:
                 jsonRecord = {}
@@ -104,30 +105,26 @@ def export_to_json(path_to_config="config.ini"):
                     mapdataArray.append(jsonRecord)
             
             jsonObj['records'] = mapdataArray
+            jsonObj['timestamp'] = str(datetime.now())
+            retval = json.dumps(jsonObj)
+
+            with open("output/" + str(range) + ".json", 'w') as file:
+                file.write(retval)
         
         elif query_type == 'value':
-            valuesArray = []
-            for record in result[0].records:
-                jsonRecord = {}
-                jsonRecord['time'] = str(record.values["_time"])
-                jsonRecord['device'] = record.values['device']
-                jsonRecord['altitude'] = record.values['altitude']
-                jsonRecord[fieldname] = record.values[fieldname]
-                jsonRecord['latitude'] = record.values['latitude']
-                jsonRecord['longitude'] = record.values['longitude']
-                if (record.values[fieldname] != None):
-                    valuesArray.append(jsonRecord)
-            jsonObj['values'] = valuesArray
+
+            result = query_api.query_csv(query=query)
+
+            with open("output/" + str(range_start) + "__" + str(range_stop) + ".csv", 'a') as file:
+
+                for row in result:
+                    file.write(str(row)[1:-1])
+                    file.write("\r\n")
 
         else:
             print("unknown query type: "  + str(query_type))
 
-        jsonObj['timestamp'] = str(datetime.now())
-
-        retval = json.dumps(jsonObj)
-        print(retval)
-
-
+        
 args = sys.argv[1:]
 path = args[0]
 
