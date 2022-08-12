@@ -4,3 +4,4 @@ payload.json
 __pycache__/
 .pythonVirtualEnv/
 .venv*
+output
