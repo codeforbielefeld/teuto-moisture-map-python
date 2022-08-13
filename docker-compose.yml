@@ -1,0 +1,65 @@
+version: "3.9"
+services:
+  tmm:
+    build: services/webhook
+    depends_on:
+      - influx
+    env_file:
+      - .dev.env
+    ports:
+      - "5000:5000"
+
+  influx:
+    image: influxdb:2.2.0-alpine
+    volumes:
+      - influxdb-storage:/var/lib/influxdb
+    ports:
+      - "8086:8086"
+    env_file:
+      - .dev.env
+
+  export:
+    image: services/export
+    volumes:
+      - output-storage:/usr/src/app/output
+    env_file:
+      - dev.env
+
+  #postgres:
+  #  image: postgres:14
+  #  environment:
+  #    POSTGRES_USER: ${POSTGRES_USER:-postgres}
+  #    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+  #    PGDATA: /data/postgres
+  #  volumes:
+  #    - postgres-storage:/data/postgres
+  #  ports:
+  #    - "5432:5432"
+  
+  metadata-management:
+    build: services/metadata
+    command: python dwd_import.py moisture --influx=True
+    depends_on:
+      - postgres
+    env_file:
+      - .dev.env
+
+  #pgadmin:
+  #  image: dpage/pgadmin4
+  #  depends_on:
+  #    - postgres
+  #  environment:
+  #    PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+  #    PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+  #    PGADMIN_CONFIG_SERVER_MODE: 'False'
+  #  volumes:
+  #    - pgadmin-storage:/var/lib/pgadmin
+  #  ports:
+  #    - "${PGADMIN_PORT:-5050}:80"
+
+volumes:
+  influxdb-storage: {}
+  pgadmin-storage: {}
+  output-storage: {}
+  #postgres-storage: {}
+  
