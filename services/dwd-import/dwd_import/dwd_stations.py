@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 
 from pyproj import Geod
 
-from models import DWDStation, PrecipitationMeasurment
+from dwd_import.models import DWDStation, PrecipitationMeasurment
 
 
 __dataset_urls = None
@@ -135,11 +135,13 @@ def get_precipitation(station: DWDStation) -> List[PrecipitationMeasurment]:
                 print(f"Could not parse row: {row}, eror: {e}")
         return result
 
-
-if __name__ == "__main__":
+def run():
     station = neares_active_station(52, 8.53)
     print(f"Station: {station.name}, id: {station.station_id}")
     data = get_precipitation(station)
     print(f"Recieved {len(data)} measurments for station. Latest 30:")
     for x in data[-30:]:
         print(f"{x.date}: {x.preciptation}")
+
+if __name__ == "__main__":
+    run()

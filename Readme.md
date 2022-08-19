@@ -30,33 +30,36 @@ TODO
 
 To run all Tests in the project which start with _test_ run:
 
-
     python -m unittest discover
 
 ## Running the application in production mode
+
 TODO
 
 ## Running the application in development mode
+
 Simply run:
 
-    docker compose up
+    docker compose up --build
 
 Now the TMM web server over localhost:5000 and an InfluxDB is reachable over localhost:8086.
 
-## Post data:
-You can post new examples via http://localhost:5000/incomingMessages with json body eg. `services/web/src/test/dragino_ttn_payload.json` and header `{ webhook-api-key: <yourApiKey> // see .dev.env file }`
-    
+## Post data
+
+You can post new examples via <http://localhost:5000/incomingMessages> with json body eg. `services/web/src/test/dragino_ttn_payload.json` and header `{ webhook-api-key: <yourApiKey> // see .dev.env file }`
 
 E.g. from the `services/web/src/test` directory run:
 
     curl -X POST http://localhost:5000/incomingMessages -H "webhook-api-key: tmm-api-key" -H "Content-Type: application/json" -d @dragino_ttn_payload.json
 
 ## Receiving data
-Navigate to http://localhost:5000/moistureData to recive the latest moisture data, (will probably be empty).
+
+Navigate to <http://localhost:5000/moistureData> to recive the latest moisture data, (will probably be empty).
 
 ## Insert test data
-Navigate to http://localhost:5000/insertTestData to insert some random test for the last days
+
+Navigate to <http://localhost:5000/insertTestData> to insert some random test for the last days
 
 ## Cofiguration
-Configuration is done via the .dev.env file
 
+Configuration is done via the .dev.env file

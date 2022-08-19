@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
-from models import DWDStation, Device, MoistureMeasurement, PrecipitationAverage
+from dwd_import.models import DWDStation, Device, MoistureMeasurement, PrecipitationAverage
 
 
 class MoistureDB(ABC):

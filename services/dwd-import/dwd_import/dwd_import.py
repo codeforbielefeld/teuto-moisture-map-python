@@ -3,11 +3,11 @@ from xmlrpc.client import Boolean
 
 import fire
 
-from dwd_raster import get_moisture, get_moisture_single, get_precipitation
+from .dwd_raster import get_moisture, get_moisture_single, get_precipitation
 
-from db.influx import InfluxDB
+from .db.influx import InfluxDB
 
-from models import MoistureMeasurement
+from .models import MoistureMeasurement
 
 
 class App(object):
@@ -59,7 +59,10 @@ class App(object):
                     f"Precipitation reproc {hour.strftime('%d.%m.%Y %H:%M')} : {get_precipitation(hour, [7.6282,8],[51.9616,52], False)}")
 
 
-if __name__ == "__main__":
+def run(): 
     # disable pager
     fire.core.Display = lambda lines, out: print(*lines, file=out)
     fire.Fire(App)
+
+if __name__ == "__main__":
+    run()

@@ -1,6 +1,0 @@
-rasterio
-pyproj
-influxdb_client
-requests
-bs4
-fire

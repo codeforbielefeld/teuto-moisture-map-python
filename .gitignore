@@ -3,3 +3,7 @@ payload.json
 .vscode/
 __pycache__/
 .pythonVirtualEnv/
+.pytest_cache
+dist/
+
+*scratch*

@@ -4,7 +4,7 @@ from typing import List
 
 from influxdb_client import InfluxDBClient, Point
 
-from models import Device, MoistureMeasurement
+from dwd_import.models import Device, MoistureMeasurement
 from . import DeviceDB, MoistureDB
 
 

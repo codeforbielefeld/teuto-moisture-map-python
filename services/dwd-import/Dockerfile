@@ -1,26 +1,31 @@
-FROM osgeo/gdal:ubuntu-small-latest
+FROM python:3 as base
 
+ENV PYTHONFAULTHANDLER=1 \
+    PYTHONHASHSEED=random \
+    PYTHONUNBUFFERED=1
 
-RUN apt-get update -y; \
-    apt-get install -y python3-pip
+WORKDIR /app
 
-WORKDIR /usr/src/app
+FROM base as builder
 
-COPY src/requirements.txt /usr/src/app
+ENV PIP_DEFAULT_TIMEOUT=100 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1 \
+    POETRY_VERSION=1.1.11
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install "poetry==$POETRY_VERSION"
+RUN python -m venv /venv
 
-COPY src /usr/src/app
+COPY pyproject.toml poetry.lock ./
+RUN poetry export -f requirements.txt | /venv/bin/pip install -r /dev/stdin
 
-#RUN useradd -ms /bin/bash dummy
-#USER dummy
+COPY . .
+RUN poetry build && /venv/bin/pip install dist/*.whl
 
-ENV INFLUXDB_V2_URL=http://host.docker.internal:8086
-ENV INFLUXDB_V2_ORG=teuto
-ENV INFLUXDB_V2_TOKEN=ttm-influx-token
-ENV INFLUXDB_V2_TIMEOUT=6000
-ENV INFLUXDB_V2_CONNECTION_POOL_MAXSIZE=25
-ENV INFLUXDB_V2_AUTH_BASIC=false
-ENV TMM_BUCKET=tmm-bucket
+FROM base as final
 
-CMD [ "python3", "dwd_import.py"]
+COPY --from=builder /venv /venv
+ENV PATH="/venv/bin:${PATH}" \
+    VIRTUAL_ENV="/venv"
+
+CMD [ "dwd-import" , "precipitation" ]
