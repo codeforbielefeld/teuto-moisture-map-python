@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 
 from pyproj import Geod
 
-from dwd_import.models import DWDStation, PrecipitationMeasurment
+from dwd_import.models import DWDStation, PrecipitationMeasurement
 
 
 __dataset_urls = None
@@ -98,20 +98,20 @@ def distance(lon1: float, lat1: float, lon2: float, lat2: float):
     return geod.inv(lons1=[lon1], lats1=[lat1], lons2=[lon2], lats2=[lat2])[2][0]
 
 
-def neares_station(lon: float, lat: float) -> DWDStation:
+def nearest_station(lon: float, lat: float) -> DWDStation:
     return min(get_stations(), key=lambda station: distance(lon, lat, station.lon, station.lat))
 
 
-def neares_active_station(lon: float, lat: float) -> DWDStation:
-    at_leat_active_until = date.today() - timedelta(days=32)
+def nearest_active_station(lon: float, lat: float) -> DWDStation:
+    at_least_active_until = date.today() - timedelta(days=32)
     active_stations = filter(
         lambda station:
-            station.historic_precipitation_dataset_url != None and station.data_until > at_leat_active_until,
+            station.historic_precipitation_dataset_url != None and station.data_until > at_least_active_until,
         get_stations())
     return min(active_stations, key=lambda station: distance(lon, lat, station.lon, station.lat))
 
 
-def get_precipitation(station: DWDStation) -> List[PrecipitationMeasurment]:
+def get_precipitation(station: DWDStation) -> List[PrecipitationMeasurement]:
     with requests.get(station.historic_precipitation_dataset_url) as resp:
         zipfile = ZipFile(BytesIO(resp.content))
         product_file_name = next(
@@ -126,7 +126,7 @@ def get_precipitation(station: DWDStation) -> List[PrecipitationMeasurment]:
                 measurement_date = datetime.strptime(
                     row.get("MESS_DATUM"), "%Y%m%d").date()
                 if(rs != -999):
-                    result.append(PrecipitationMeasurment(
+                    result.append(PrecipitationMeasurement(
                         station=station, date=measurement_date, precipitation=rs, form=rsf, quality=qn))
                 else:
                     print(
@@ -136,12 +136,12 @@ def get_precipitation(station: DWDStation) -> List[PrecipitationMeasurment]:
         return result
 
 def run():
-    station = neares_active_station(52, 8.53)
+    station = nearest_active_station(52, 8.53)
     print(f"Station: {station.name}, id: {station.station_id}")
     data = get_precipitation(station)
-    print(f"Recieved {len(data)} measurments for station. Latest 30:")
+    print(f"Received {len(data)} measurements for station. Latest 30:")
     for x in data[-30:]:
-        print(f"{x.date}: {x.preciptation}")
+        print(f"{x.date}: {x.precipitation}")
 
 if __name__ == "__main__":
     run()

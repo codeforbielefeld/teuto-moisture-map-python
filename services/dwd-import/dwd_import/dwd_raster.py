@@ -4,7 +4,7 @@ from datetime import datetime, date
 import rasterio as ri
 from pyproj import Transformer, CRS
 
-# Transform from longitute/latitute coordinates do Gauss-Krueger 3 coordinates with swaped axes as used by DWD
+# Transform from longitude/latitude coordinates do Gauss-Krueger 3 coordinates with swapped axes as used by DWD
 wgs84 = "epsg:4326"
 gk3 = "epsg:31467"
 transformer = Transformer.from_crs(wgs84, gk3, always_xy=True)

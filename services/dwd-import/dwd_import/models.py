@@ -24,7 +24,7 @@ class DWDStation(NamedTuple):
     state: str
     historic_precipitation_dataset_url: str
 
-class PrecipitationMeasurment(NamedTuple):
+class PrecipitationMeasurement(NamedTuple):
     station: DWDStation
     date: date
     precipitation: float # DWD field: RS
@@ -35,6 +35,6 @@ class PrecipitationAverage(NamedTuple):
     station: DWDStation
     day_in_month: int
     month_in_year: int
-    preciptation: float
+    precipitation: float
     since: date
-    unitl: date
+    until: date
