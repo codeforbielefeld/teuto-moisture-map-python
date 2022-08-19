@@ -28,5 +28,7 @@ COPY --from=builder /venv /venv
 ENV PATH="/venv/bin:${PATH}" \
     VIRTUAL_ENV="/venv"
 
+COPY config.ini .
+
 #CMD ["flask","--app=ttn_hook:app",  "run", "--host=0.0.0.0"]
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "ttn_hook:app"]
