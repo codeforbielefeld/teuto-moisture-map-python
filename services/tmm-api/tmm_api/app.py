@@ -1,21 +1,10 @@
 # app.py
-from cgitb import reset
 from flask import Flask, request
 import os
 
-from influxdb_client import InfluxDBClient, Point
-from influxdb_client.client.write_api import SYNCHRONOUS
+from .export.export_influx import export_moisture_map_data
 
-
-from os.path import dirname, abspath
-
-from dotenv import load_dotenv
-from tmm.export_influx import export_moisture_map_data
-
-from ttn import handle_ttn_message, write_test_data
-from ttn.examples import generate_test_data
-
-load_dotenv()
+from .ttn import handle_ttn_message, write_test_data
 
 # ===========
 # Config
@@ -23,20 +12,17 @@ load_dotenv()
 
 apikey = os.environ.get("TMM_API_KEY")
 
+app = Flask(__name__)
+
 # =====================
 # Webhook web interface
 # =====================
 
-# Json WS endpoint accepting messages from TTN
-app = Flask(__name__)
-
-"""
-This method accepts JSON payloads from TTN, unmarshals the required information and persists them 
-"""
-
-
 @app.post("/incomingMessages")
 def incomingMessages():
+    """
+    This method accepts JSON payloads from TTN, unmarshals the required information and persists them 
+    """
     request_apikey = request.headers.get(key="webhook-api-key", default=None)
 
     if apikey is None or request_apikey == apikey:
@@ -53,10 +39,16 @@ def incomingMessages():
 
 @app.get("/moistureData")
 def moistureData():
+    """
+    This method exports the moisture data for the current day.
+    """
     return export_moisture_map_data(), 200
 
 @app.route("/insertTestData", methods=["GET", "POST"])
 def insertTestData():
+    """
+    This method writes test data into the influx database for test purposes
+    """
     if request.method == "POST":
         days = int(request.form["days"])
         devices = int(request.form["devices"])

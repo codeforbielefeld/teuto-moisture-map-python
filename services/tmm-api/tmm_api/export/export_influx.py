@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 import os
 
-from common.influx import get_influx_client
+from tmm_api.common.influx import get_influx_client
 
 query_type = os.environ.get('EXPORT_QUERY_TYPE') or 'map'
 range = os.environ.get('EXPORT_TIMERANGE') or "-1d"

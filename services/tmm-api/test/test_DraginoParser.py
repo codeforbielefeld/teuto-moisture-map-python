@@ -4,7 +4,7 @@ import json
 
 from os.path import dirname
 
-from ttn.payload import _get_parser_for_model
+from tmm_api.ttn.payload import _get_parser_for_model
 
 class TestDraginoParser(unittest.TestCase):
 

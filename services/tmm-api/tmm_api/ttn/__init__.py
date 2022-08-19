@@ -2,9 +2,10 @@ from logging import Logger
 import os
 from influxdb_client import Point
 from influxdb_client.client.write_api import SYNCHRONOUS
-from common.influx import get_influx_client
-from ttn.examples import generate_test_data
-from ttn.payload import parse_payload
+
+from ..common.influx import get_influx_client
+from .examples import generate_test_data
+from .payload import parse_payload
 
 from os.path import dirname, abspath
 

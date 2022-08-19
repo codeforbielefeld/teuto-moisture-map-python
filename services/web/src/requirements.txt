@@ -1,5 +1,0 @@
-Flask==2.0.2
-influxdb_client==1.23.0
-jsonpath_ng==1.5.3
-python-dotenv==0.20.0
-autopep8==1.6.0

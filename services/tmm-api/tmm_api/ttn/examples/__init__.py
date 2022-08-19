@@ -22,13 +22,13 @@ def construct_data(device_id, lon, lat, received_at, moisture, temperature, cond
     )
 
 
-def generate_test_data(num_devices: int, days: int, num_measurments: int = 24):
+def generate_test_data(num_devices: int, days: int, num_measurements: int = 24):
     last = datetime.now()
     for device in range(num_devices):
         lat = 52.02182 + random()
         lon = 8.53509 + random()
         for day in range(days):
-            for measurment in range(num_measurments):
+            for measurement in range(num_measurements):
                 received_at = last - \
-                    timedelta(days=day+measurment/num_measurments)
+                    timedelta(days=day+measurement/num_measurements)
                 yield construct_data(device, lon, lat, received_at, random()*100, random()*30, random())
