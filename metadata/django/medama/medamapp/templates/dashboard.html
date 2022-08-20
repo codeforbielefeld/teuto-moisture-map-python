@@ -1,0 +1,10 @@
+{% extends 'main_template.html' %}
+
+<table class="sensor_overview">
+    <th>Name</th><th>Device id</th><th>Location</th><th>Status</th>
+    {% for sensor in data.sensors %}
+        <tr class="sensor_data_row">
+            <td>sensor.name</td><td>sensor.device_id</td><td>sensor.location_name</td><td>sensor.state</td>
+        </tr>
+    {% endfor %}
+</table>
