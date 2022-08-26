@@ -13,6 +13,7 @@ class MoistureMeasurement(NamedTuple):
     percent: int
     date: date
 
+
 class DWDStation(NamedTuple):
     station_id: str
     data_since: date
@@ -24,12 +25,14 @@ class DWDStation(NamedTuple):
     state: str
     historic_precipitation_dataset_url: str
 
+
 class PrecipitationMeasurement(NamedTuple):
     station: DWDStation
     date: date
-    precipitation: float # DWD field: RS
-    form: int # DWD field: RSF
-    quality: int # DWD field: QN_6
+    precipitation: float  # DWD field: RS
+    form: int  # DWD field: RSF
+    quality: int  # DWD field: QN_6
+
 
 class PrecipitationAverage(NamedTuple):
     station: DWDStation

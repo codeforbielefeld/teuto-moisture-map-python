@@ -1,0 +1,14 @@
+name: Checks for dwd-import service
+on: [push]
+jobs:
+  nox:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Setup Nox
+        uses: daisylb/setup-nox@v2.1.0      
+      - name: Run nox for service dwd-import
+        working-directory: ./services/dwd-import
+        run: nox
+      - run: echo "🍏 This job's status is ${{ job.status }}."

@@ -35,7 +35,19 @@ services:
       ofelia.enabled: "true"
       ofelia.job-exec.fetch_precipitaiton.schedule: "@every 30s"
       ofelia.job-exec.fetch_precipitaiton.command: "dwd-import precipitation"
-
+    env_file:
+      - .dev.env
+    depends_on:
+      - mongo
+      - influx
+  dwd-mongo-test:
+    build: services/dwd-import
+    command: mongo-test 
+    env_file:
+      - .dev.env
+    depends_on:
+      - mongo
+      - influx
   scheduler:
     image: mcuadros/ofelia:latest
     depends_on:
@@ -71,8 +83,26 @@ services:
 
     ports:
       - "${PGADMIN_PORT:-5050}:80"
+  mongo:
+    image: mongo
+    restart: always    
+    env_file:
+      - .dev.env
+    volumes:
+      - mongodb-storage:/data/db
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    env_file:
+      - .dev.env
+    depends_on:
+      - mongo
 
 volumes:
   influxdb-storage: {}
   postgres-storage: {}
   pgadmin-storage: {}
+  mongodb-storage: {}

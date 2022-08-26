@@ -25,7 +25,9 @@ def get_moisture_single(day: date, lon: float, lat: float):
         rm, cm = src.shape
         r, c = src.index(x[0], y[0])
         rm, cm = src.shape
-        assert 0 <= r <= rm and 0 <= c <= cm, f"Coordinates out of bounds! {lon, lat} -> {r,c}"
+        assert (
+            0 <= r <= rm and 0 <= c <= cm
+        ), f"Coordinates out of bounds! {lon, lat} -> {r,c}"
         data = src.read(1)[r, c]
         return data
 
@@ -47,8 +49,11 @@ def fetch_precipitation(hour: datetime, recent: bool = True):
     reproc_hour_str = hour.strftime("%Y%m%d_%H")
 
     # See: https://gdal.org/user/virtual_file_systems.html
-    url = f"/vsitar/vsicurl/https://opendata.dwd.de/climate_environment/CDC/grids_germany/hourly/radolan/recent/asc/RW-{day_str}.tar.gz/RW_{hour_str}50.asc" if recent else \
-        f"/vsitar/vsicurl/https://opendata.dwd.de/climate_environment/CDC/grids_germany/hourly/radolan/reproc/2017_002/asc/{reproc_year_str}/RW2017.002_{reproc_month_str}_asc.tar.gz/RW_2017.002_{reproc_hour_str}50.asc"
+    url = (
+        f"/vsitar/vsicurl/https://opendata.dwd.de/climate_environment/CDC/grids_germany/hourly/radolan/recent/asc/RW-{day_str}.tar.gz/RW_{hour_str}50.asc"
+        if recent
+        else f"/vsitar/vsicurl/https://opendata.dwd.de/climate_environment/CDC/grids_germany/hourly/radolan/reproc/2017_002/asc/{reproc_year_str}/RW2017.002_{reproc_month_str}_asc.tar.gz/RW_2017.002_{reproc_hour_str}50.asc"
+    )
     return ri.open(url)
 
 
@@ -56,9 +61,11 @@ radolan_prj = 'PROJCS["Stereographic_North_Pole",GEOGCS["GCS_unnamed ellipse",DA
 radolan_transformer = Transformer.from_crs(wgs84, CRS(radolan_prj), always_xy=True)
 
 
-def get_precipitation(hour: datetime, lons: List[float], lats: List[float], recent: bool = True):
+def get_precipitation(
+    hour: datetime, lons: List[float], lats: List[float], recent: bool = True
+):
     with fetch_precipitation(hour, recent) as src:
         xs, ys = radolan_transformer.transform(lons, lats)
         xy = xy = [[x, y] for x, y in zip(xs, ys)]
-        data = [a[0]*0.1 for a in src.sample(xy, 1)]
+        data = [a[0] * 0.1 for a in src.sample(xy, 1)]
         return data
