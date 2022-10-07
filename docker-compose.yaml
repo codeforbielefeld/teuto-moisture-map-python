@@ -6,6 +6,10 @@ services:
       - influx
     env_file:
       - .dev.env
+    environment:
+      INFLUX_CONFIG_FILE: /run/secrets/influx_config
+    secrets:
+      - influx_config
     ports:
       - "5000:5000"
 
@@ -106,3 +110,7 @@ volumes:
   postgres-storage: {}
   pgadmin-storage: {}
   mongodb-storage: {}
+
+secrets:
+  influx_config: 
+    file: ./examples/influx_config.ini

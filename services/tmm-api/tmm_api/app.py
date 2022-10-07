@@ -1,4 +1,5 @@
 # app.py
+from .common.secrets import get_secret
 from flask import Flask, request
 import os
 
@@ -10,7 +11,7 @@ from .ttn import handle_ttn_message, write_test_data
 # Config
 # ===========
 
-apikey = os.environ.get("TMM_API_KEY")
+apikey = get_secret("TMM_API_KEY")
 
 app = Flask(__name__)
 

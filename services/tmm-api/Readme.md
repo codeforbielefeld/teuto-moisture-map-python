@@ -3,7 +3,7 @@
 ## Requirements
 
 - [poetry](https://python-poetry.org) for local development
-- [nox](https://nox.thea.codes/en/stable/) for running all checks in one goe
+- [nox](https://nox.thea.codes/en/stable/) for running all checks in one go
 - docker for building/running the docker image
 
 ## Doing things with poetry
@@ -33,3 +33,5 @@ Run `nox` to run pytest, black, flask9 and mypy.
 It's easiest to use the top level docker compose setup using `docker compose up --build`.
 
 Otherwise run `docker build -t tmm-api . && docker run <set environment> -p 5000:5000 -it tmm-api` to build an run the service inside docker.
+
+Alternatively use buildpacks to build the docker image `pack build tmm-api --buildpack paketo-buildpacks/python`.
