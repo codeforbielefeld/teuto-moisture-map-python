@@ -1,4 +1,5 @@
 # app.py
+from .common.influx import get_influx_client
 from .common.secrets import get_secret
 from flask import Flask, request
 import os
@@ -18,6 +19,7 @@ app = Flask(__name__)
 # =====================
 # Webhook web interface
 # =====================
+
 
 @app.post("/incomingMessages")
 def incomingMessages():
@@ -45,6 +47,7 @@ def moistureData():
     """
     return export_moisture_map_data(), 200
 
+
 @app.route("/insertTestData", methods=["GET", "POST"])
 def insertTestData():
     """
@@ -70,6 +73,17 @@ def insertTestData():
         </body>
     </html>
     """, 200
+
+
+@app.get("/internal/health/self")
+def health():
+    return "", 200
+
+@app.get("/internal/health/int")
+def health_int():
+    influx = get_influx_client()
+    assert influx.ping()
+    return "", 200
 
 
 if __name__ == "__main__":

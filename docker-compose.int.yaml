@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  tmm-api:
+    image: ${REGISTRY}/${REPOSITORY}/${STACK_NAME}:${GITHUB_SHA_SHORT}
+    depends_on:
+      - influx
+    env_file:
+      - .dev.env
+    environment:
+      INFLUX_CONFIG_FILE: /run/secrets/influx_config
+    secrets:
+      - influx_config
+    ports:
+      - "5000:5000"
+
+  influx:
+    image: influxdb:2.2.0-alpine
+    ports:
+      - "8086:8086"
+    env_file:
+      - .dev.env
+
+secrets:
+  influx_config: 
+    file: ./examples/influx_config.ini

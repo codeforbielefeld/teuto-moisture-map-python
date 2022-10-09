@@ -4,11 +4,11 @@ on: [push]
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  REPOSITORY: ${{ github.repository }}
   STACK_NAME: tmm-api
 
 jobs:
-  build-tmm:
+  tmm-build:
     runs-on: ubuntu-latest
     outputs:
       GITHUB_SHA_SHORT: ${{ steps.sha7.outputs.GITHUB_SHA_SHORT }}
@@ -24,8 +24,21 @@ jobs:
       - name: Build image
         uses: mamezou-tech/buildpacks-action@master
         with:
-          image: ${REGISTRY}/${IMAGE_NAME}/django-app
+          image: ${REGISTRY}/${REPOSITORY}/${STACK_NAME}
           tag: ${GITHUB_SHA_SHORT}
           path: 'services/tmm-api'
-          builder: 'gcr.io/paketo-buildpacks/builder:base'
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+          builder: 'gcr.io/paketo-buildpacks/builder:base'      
+      - name: Start service
+        run: docker-compose -f docker-compose.int.yaml up -d
+      - name: Check service
+        run: |
+          sleep 10
+          curl -f localhost:5000/internal/health/self
+          curl -f localhost:5000/internal/health/int
+      - name: Service Logs
+        if: failure()
+        run: docker-compose -f docker-compose.int.yaml logs
+      - name: Stop service
+        if: always()
+        run: docker-compose -f docker-compose.int.yaml down
+
