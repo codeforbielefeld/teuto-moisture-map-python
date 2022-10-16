@@ -24,8 +24,12 @@ jobs:
           cache: 'poetry'
       - run: poetry config virtualenvs.prefer-active-python true      
       - run: poetry install
-      - name: Run pytest
-        run: poetry run pytest 
+      - name: pytest
+        run: poetry run pytest
+      - name: flake8
+        run: poetry run flake8
+      - name: black
+        run: poetry run black --check .
 
   tmm-docker:
     #needs: tmm-pytest

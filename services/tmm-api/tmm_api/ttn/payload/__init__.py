@@ -2,7 +2,7 @@ from .PayloadParser import PayloadParser
 from .DraginoLSE01 import DraginoLSE01
 
 """
-This module produces PayloadParser instances, depending on the brand and model 
+This module produces PayloadParser instances, depending on the brand and model
 of a sensor.
 
 It keeps a local cache of instantiated parsers and returns the same instance,
@@ -13,7 +13,8 @@ once it has been created.
 def parse_payload(payload: dict) -> dict:
     common_attributes = _parse_common_attributes(payload)
     specific_attributes = _get_parser_for_model(
-        common_attributes["device_brand"], common_attributes["device_model"]).parse_payload(payload)
+        common_attributes["device_brand"], common_attributes["device_model"]
+    ).parse_payload(payload)
     return dict(**common_attributes, **specific_attributes)
 
 
@@ -29,11 +30,11 @@ def _set_instance(brand: str, model: str, instance: PayloadParser):
 
 
 def _get_parser_for_model(brand: str, model: str) -> PayloadParser:
-    if(brand == "dragino"):
-        if(model == "lse01"):
+    if brand == "dragino":
+        if model == "lse01":
             try:
                 return _get_instance(brand=brand, model=model)
-            except:
+            except Exception:
                 dragino = DraginoLSE01()
                 _set_instance(brand=brand, model=model, instance=dragino)
 
@@ -48,21 +49,18 @@ def _parse_common_attributes(json: dict) -> dict:
     received_at = json["received_at"]
 
     try:
-        latitude = float(json["uplink_message"]
-                         ["locations"]["user"]["latitude"])
-    except:
+        latitude = float(json["uplink_message"]["locations"]["user"]["latitude"])
+    except Exception:
         latitude = None
 
     try:
-        longitude = float(json["uplink_message"]
-                          ["locations"]["user"]["longitude"])
-    except:
+        longitude = float(json["uplink_message"]["locations"]["user"]["longitude"])
+    except Exception:
         longitude = None
 
     try:
-        altitude = float(json["uplink_message"]
-                         ["locations"]["user"]["altitude"])
-    except:
+        altitude = float(json["uplink_message"]["locations"]["user"]["altitude"])
+    except Exception:
         altitude = 0.0
 
     return dict(
@@ -72,5 +70,5 @@ def _parse_common_attributes(json: dict) -> dict:
         device_id=device_id,
         device_brand=device_brand,
         device_model=device_model,
-        received_at=received_at
+        received_at=received_at,
     )

@@ -2,7 +2,9 @@ from datetime import datetime, timedelta
 from random import random
 
 
-def construct_data(device_id, lon, lat, received_at, moisture, temperature, conductivity):
+def construct_data(
+    device_id, lon, lat, received_at, moisture, temperature, conductivity
+):
     return dict(
         latitude=lat,
         longitude=lon,
@@ -18,7 +20,7 @@ def construct_data(device_id, lon, lat, received_at, moisture, temperature, cond
         battery_unit="V",
         conductivity_unit="uS/cm",
         temperature_unit="°C",
-        moisture_unit="%"
+        moisture_unit="%",
     )
 
 
@@ -29,6 +31,15 @@ def generate_test_data(num_devices: int, days: int, num_measurements: int = 24):
         lon = 8.53509 + random()
         for day in range(days):
             for measurement in range(num_measurements):
-                received_at = last - \
-                    timedelta(days=day+measurement/num_measurements)
-                yield construct_data(device, lon, lat, received_at, random()*100, random()*30, random())
+                received_at = last - timedelta(
+                    days=day + measurement / num_measurements
+                )
+                yield construct_data(
+                    device,
+                    lon,
+                    lat,
+                    received_at,
+                    random() * 100,
+                    random() * 30,
+                    random(),
+                )

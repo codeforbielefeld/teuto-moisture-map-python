@@ -8,7 +8,6 @@ from .examples import generate_test_data
 from .payload import parse_payload
 
 
-
 # ===========
 # Persistence
 # ===========
@@ -18,15 +17,15 @@ bucket = get_secret("TMM_BUCKET")
 
 def create_point_with_common_attributes(name, data):
     """
-    Sets common attributes from a sensor to a newly created Point 
+    Sets common attributes from a sensor to a newly created Point
     """
     return (
         Point(name)
         .tag("device", data["device_id"])
         .tag("device_brand", data["device_brand"])
-        .tag("device_model",  data["device_model"])
-        .field("latitude",  data["latitude"])
-        .field("longitude",  data["longitude"])
+        .tag("device_model", data["device_model"])
+        .field("latitude", data["latitude"])
+        .field("longitude", data["longitude"])
         .field("altitude", data["altitude"])
         .time(data["received_at"])
     )
@@ -68,8 +67,8 @@ def write_data(data: dict):
 
 
 def handle_ttn_message(json: dict, logger: Logger):
-    """ 
-    Handle an incomming TTN message 
+    """
+    Handle an incomming TTN message
     """
     logger.info("Received message: %s", str(json))
 
@@ -79,8 +78,7 @@ def handle_ttn_message(json: dict, logger: Logger):
     logger.info("Writing to bucket: %s", bucket)
     write_data(data)
 
-def write_test_data(num_devices:int, days: int, num_measurments:int = 24):     
-    for data in generate_test_data(num_devices, days, num_measurments): 
+
+def write_test_data(num_devices: int, days: int, num_measurments: int = 24):
+    for data in generate_test_data(num_devices, days, num_measurments):
         write_data(data)
-
-

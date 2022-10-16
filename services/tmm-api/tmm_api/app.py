@@ -2,7 +2,6 @@
 from .common.influx import get_influx_client
 from .common.secrets import get_secret
 from flask import Flask, request
-import os
 
 from .export.export_influx import export_moisture_map_data
 
@@ -24,7 +23,7 @@ app = Flask(__name__)
 @app.post("/incomingMessages")
 def incomingMessages():
     """
-    This method accepts JSON payloads from TTN, unmarshals the required information and persists them 
+    This method accepts JSON payloads from TTN, unmarshals the required information and persists them
     """
     request_apikey = request.headers.get(key="webhook-api-key", default=None)
 
@@ -59,7 +58,8 @@ def insertTestData():
         measurements = int(request.form["measurements"])
         write_test_data(devices, days, measurements)
         return "Success", 200
-    return """
+    return (
+        """
     <!doctype html>
     <html>
         <header><title>Insert test data</title></header>
@@ -68,16 +68,19 @@ def insertTestData():
                 Days:<input name="days" value=1 />
                 Devices: <input name="devices" value=5 />
                 Measurements per day: <input name="measurements" value=24 />
-                <input type=submit value="Insert" />      
+                <input type=submit value="Insert" />
             </form>
         </body>
     </html>
-    """, 200
+    """,
+        200,
+    )
 
 
 @app.get("/internal/health/self")
 def health():
     return "", 200
+
 
 @app.get("/internal/health/int")
 def health_int():

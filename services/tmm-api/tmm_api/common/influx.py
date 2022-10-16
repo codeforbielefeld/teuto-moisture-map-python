@@ -1,4 +1,3 @@
-from logging import Logger
 import os
 from influxdb_client import InfluxDBClient
 
