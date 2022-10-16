@@ -1,3 +1,7 @@
+#####################
+# Development setup #
+#####################
+
 version: "3.9"
 services:
   tmm-api:
@@ -7,6 +11,7 @@ services:
     environment:
       INFLUX_CONFIG_FILE: /run/secrets/influx_config
       TMM_BUCKET_FILE: /run/secrets/tmm_bucket
+      DEVELOPMENT_MODE: true
     secrets:
       - influx_config
       - tmm_bucket

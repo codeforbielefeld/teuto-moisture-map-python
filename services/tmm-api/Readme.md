@@ -4,7 +4,8 @@
 
 - [poetry](https://python-poetry.org) for local development
 - [nox](https://nox.thea.codes/en/stable/) for running all checks in one go
-- docker for building/running the docker image
+- [pack](https://buildpacks.io/docs/tools/pack/) for building the production image using buildpacks
+- docker
 
 ## Doing things with poetry
 
@@ -26,11 +27,11 @@ Run `gunicorn --bind 0.0.0.0:5000 tmm_api:app` to run the application using guni
 
 ## Doing things with nox
 
-Run `nox` to run pytest, black, flask9 and mypy.
+Run `nox` to run pytest, black, flask8 and mypy.
 
 ## Doing things with docker
 
-It's easiest to use the top level docker compose setup using `docker compose up --build`.
+It's easiest to use the top level docker compose setup using `docker compose up --build tmm-api`.
 
 Otherwise run `docker build -t tmm-api . && docker run <set environment> -p 5000:5000 -it tmm-api` to build an run the service inside docker.
 

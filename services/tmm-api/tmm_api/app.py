@@ -2,16 +2,19 @@
 from .common.influx import get_influx_client
 from .common.secrets import get_secret
 from flask import Flask, request
+import os
 
 from .export.export_influx import export_moisture_map_data
 
 from .ttn import handle_ttn_message, write_test_data
+
 
 # ===========
 # Config
 # ===========
 
 apikey = get_secret("TMM_API_KEY")
+
 
 app = Flask(__name__)
 
@@ -47,34 +50,37 @@ def moistureData():
     return export_moisture_map_data(), 200
 
 
-@app.route("/insertTestData", methods=["GET", "POST"])
-def insertTestData():
-    """
-    This method writes test data into the influx database for test purposes
-    """
-    if request.method == "POST":
-        days = int(request.form["days"])
-        devices = int(request.form["devices"])
-        measurements = int(request.form["measurements"])
-        write_test_data(devices, days, measurements)
-        return "Success", 200
-    return (
+development_mode = os.environ.get("DEVELOPMENT_MODE")
+if development_mode == "true":
+
+    @app.route("/insertTestData", methods=["GET", "POST"])
+    def insertTestData():
         """
-    <!doctype html>
-    <html>
-        <header><title>Insert test data</title></header>
-        <body>
-            <form action="" method=post enctype=multipart/form-data>
-                Days:<input name="days" value=1 />
-                Devices: <input name="devices" value=5 />
-                Measurements per day: <input name="measurements" value=24 />
-                <input type=submit value="Insert" />
-            </form>
-        </body>
-    </html>
-    """,
-        200,
-    )
+        This method writes test data into the influx database for test purposes
+        """
+        if request.method == "POST":
+            days = int(request.form["days"])
+            devices = int(request.form["devices"])
+            measurements = int(request.form["measurements"])
+            write_test_data(devices, days, measurements)
+            return "Success", 200
+        return (
+            """
+        <!doctype html>
+        <html>
+            <header><title>Insert test data</title></header>
+            <body>
+                <form action="" method=post enctype=multipart/form-data>
+                    Days:<input name="days" value=1 />
+                    Devices: <input name="devices" value=5 />
+                    Measurements per day: <input name="measurements" value=24 />
+                    <input type=submit value="Insert" />
+                </form>
+            </body>
+        </html>
+        """,
+            200,
+        )
 
 
 @app.get("/internal/health/self")
