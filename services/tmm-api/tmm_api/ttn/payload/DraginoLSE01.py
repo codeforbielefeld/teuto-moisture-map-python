@@ -1,10 +1,11 @@
+from typing import Dict
 from .PayloadParser import PayloadParser
 
 
 class DraginoLSE01(PayloadParser):
-    def parse_payload(self, payload: str) -> dict:
+    def parse_payload(self, payload: dict) -> dict:
 
-        retval = dict()
+        retval: Dict[str, str | float] = dict()
 
         # Extracting the values from the message is specific to the sensor used
         # This implementation supports only the dragoni sensor as of now

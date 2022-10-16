@@ -1,3 +1,4 @@
+from typing import Dict
 from .PayloadParser import PayloadParser
 from .DraginoLSE01 import DraginoLSE01
 
@@ -18,7 +19,7 @@ def parse_payload(payload: dict) -> dict:
     return dict(**common_attributes, **specific_attributes)
 
 
-__parsers = {}
+__parsers: Dict[str, PayloadParser] = {}
 
 
 def _get_instance(brand: str, model: str) -> PayloadParser:
