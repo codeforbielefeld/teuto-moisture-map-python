@@ -1,22 +1,20 @@
 import nox
 
 
-@nox.session(python=["3.10"], external= True)
+@nox.session(python=["3.10"])
 def tests(session):
     session.run("poetry", "install", external = True)
-    session.run("poetry", "run", "pytest")
+    session.run("poetry", "run", "pytest", external= True)
 
 
 @nox.session(python=["3.10"])
 def lint(session):
-    session.install("poetry")
-    session.run("poetry", "install")
-    session.run("poetry", "run", "black", "--check", ".")
-    session.run("poetry", "run", "flake8", ".")
+    session.run("poetry", "install", external= True)
+    session.run("poetry", "run", "black", "--check", ".", external= True)
+    session.run("poetry", "run", "flake8", ".", external= True)
 
 
 @nox.session(python=["3.10"])
 def typing(session):
-    session.install("poetry")
-    session.run("poetry", "install")
-    session.run("poetry", "run", "mypy", ".")
+    session.run("poetry", "install", external= True)
+    session.run("poetry", "run", "mypy", ".", external= True)
