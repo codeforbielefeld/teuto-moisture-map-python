@@ -4,12 +4,12 @@ services:
     build: services/tmm-api
     depends_on:
       - influx
-    env_file:
-      - .dev.env
     environment:
       INFLUX_CONFIG_FILE: /run/secrets/influx_config
+      TMM_BUCKET_FILE: /run/secrets/tmm_bucket
     secrets:
       - influx_config
+      - tmm_bucket
     ports:
       - "5000:5000"
 
@@ -114,3 +114,5 @@ volumes:
 secrets:
   influx_config: 
     file: ./examples/influx_config.ini
+  tmm_bucket:
+    file: ./examples/tmm_bucket

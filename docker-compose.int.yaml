@@ -1,15 +1,15 @@
 version: "3.9"
 services:
   tmm-api:
-    image: ${REGISTRY}/${REPOSITORY}/${STACK_NAME}:${GITHUB_SHA_SHORT}
+    image: ${TMM_API_IMAGE_NAME}
     depends_on:
       - influx
-    env_file:
-      - .dev.env
     environment:
-      INFLUX_CONFIG_FILE: /run/secrets/influx_config
+      INFLUX_CONFIG_FILE: /run/secrets/influx_config      
+      TMM_BUCKET_FILE: /run/secrets/tmm_bucket
     secrets:
       - influx_config
+      - tmm_bucket
     ports:
       - "5000:5000"
 
@@ -18,8 +18,10 @@ services:
     ports:
       - "8086:8086"
     env_file:
-      - .dev.env
+      - ./examples/influx_docker.env
 
 secrets:
   influx_config: 
     file: ./examples/influx_config.ini
+  tmm_bucket:
+    file: ./examples/tmm_bucket

@@ -1,15 +1,14 @@
 from datetime import datetime
 import json
-import os
 
 from tmm_api.common.influx import get_influx_client
+from tmm_api.common.secrets import get_secret
 
-query_type = os.environ.get('EXPORT_QUERY_TYPE') or 'map'
-range = os.environ.get('EXPORT_TIMERANGE') or "-1d"
-measurement = os.environ.get('EXPORT_MEASUREMENT') or "moisture"
-fieldname = os.environ.get('EXPORT_FIELDNAME') or "percent"
-bucket = os.environ.get("TMM_BUCKET")
-
+query_type = 'map'
+range = "-1d"
+measurement = "moisture"
+fieldname = "percent"
+bucket = get_secret("TMM_BUCKET")
 
 def export_moisture_map_data():
 

@@ -1,19 +1,19 @@
 from logging import Logger
-import os
 from influxdb_client import Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 from ..common.influx import get_influx_client
+from ..common.secrets import get_secret
 from .examples import generate_test_data
 from .payload import parse_payload
 
-from os.path import dirname, abspath
+
 
 # ===========
 # Persistence
 # ===========
 
-bucket = os.environ.get("TMM_BUCKET")
+bucket = get_secret("TMM_BUCKET")
 
 
 def create_point_with_common_attributes(name, data):
