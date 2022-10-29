@@ -4,10 +4,10 @@ from django.shortcuts import render
 from .models import Sensor
 
 def index(request):
-    return HttpResponse("Hello, world. You're at the medama app index.")
+    return HTTPResponse("Hello, world. You're at the medama app index.")
 
 def login(request):
-    return HttpResponse("Login form here.")
+    return HTTPResponse("Login form here.")
 
 def user_landingpage(request, user_id):
     return HTTPResponse("This is where logged in users can see infos about their sensor(s)")
