@@ -32,7 +32,7 @@ services:
     ports:
       - "8086:8086"
     env_file:
-      - ./examples/influx_docker.env
+      - ./influx_docker.env
     deploy:
       replicas: 1
       update_config:
