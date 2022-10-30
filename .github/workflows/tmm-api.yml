@@ -101,17 +101,15 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           chmod 600 ~/.ssh/known_hosts
       - name: Set Environment
-        run: |
-          echo "TMM_API_IMAGE_NAME=${{ needs.tmm-docker.outputs.TMM_API_IMAGE_NAME }}" >> $GITHUB_ENV
+        run: echo "TMM_API_IMAGE_NAME=${{ needs.tmm-docker.outputs.TMM_API_IMAGE_NAME }}" >> $GITHUB_ENV
       - name: Create Docker Secrets if missing
         run: |
           docker secret inspect tmm_bucket > /dev/null || echo "${{ secrets.DEV_TMM_BUCKET }}" | docker secret create tmm_bucket -
           docker secret inspect tmm_api_key > /dev/null || echo "${{ secrets.DEV_TMM_API_KEY }}" | docker secret create tmm_api_key -
           docker secret inspect tmm_influx_config > /dev/null || echo "${{ secrets.DEV_TMM_INFLUX_CONFIG }}" | docker secret create tmm_influx_config -
+      - name: Create docker influx config
+        run: echo "${{ secrets.DEV_INFLUX_DOCKER_ENV }}" > ./influx_docker.env
       - name: Copy nginx config
-        run: |
-          cat ./services/nginx/nginx.conf |  docker run -i  -v nginx_config:/dest alpine sh -c 'cat > /dest/nginx.conf'
+        run: cat ./services/nginx/nginx.conf |  docker run -i  -v nginx_config:/dest alpine sh -c 'cat > /dest/nginx.conf'
       - name: Deploy Docker Stack
-        run: |
-          echo ${{ secrets.DEV_INFLUX_DOCKER_ENV }} > ./influx_docker.env
-          docker stack deploy --prune --compose-file docker-compose.dev.yaml tmm-dev
+        run: docker stack deploy --prune --compose-file docker-compose.dev.yaml tmm-dev
