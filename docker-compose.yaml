@@ -11,10 +11,12 @@ services:
     environment:
       INFLUX_CONFIG_FILE: /run/secrets/influx_config
       TMM_BUCKET_FILE: /run/secrets/tmm_bucket
+      TMM_API_KEY_FILE: /run/secrets/tmm_api_key
       DEVELOPMENT_MODE: true
     secrets:
       - influx_config
       - tmm_bucket
+      - tmm_api_key
     ports:
       - "5000:5000"
 
@@ -25,7 +27,7 @@ services:
     ports:
       - "8086:8086"
     env_file:
-      - .dev.env
+      - ./examples/influx_docker.env
 
   dwd-moisture:
     build: services/dwd-import
@@ -121,3 +123,5 @@ secrets:
     file: ./examples/influx_config.ini
   tmm_bucket:
     file: ./examples/tmm_bucket
+  tmm_api_key:
+    file: ./examples/tmm_api_key

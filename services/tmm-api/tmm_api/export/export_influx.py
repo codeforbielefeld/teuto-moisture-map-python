@@ -1,6 +1,5 @@
 from datetime import datetime
 import json
-
 from tmm_api.common.influx import get_influx_client
 from tmm_api.common.secrets import get_secret
 
@@ -11,84 +10,48 @@ fieldname = "percent"
 bucket = get_secret("TMM_BUCKET")
 
 
-def export_moisture_map_data():
+def export_moisture_map_data_legacy():
+    value_query = f"""
+    from(bucket: "{bucket}")
+    |> range(start: {range})
+    |> filter(fn: (r) =>
+        r._measurement == "{measurement}" and
+        r._field == "{fieldname}")"""
 
-    value_query = (
-        'from(bucket: "'
-        + bucket
-        + '") \
-    |> range(start: '
-        + range
-        + ') \
-    |> filter(fn: (r) => \
-        r._measurement == "'
-        + measurement
-        + '" and \
-        r._field == "'
-        + fieldname
-        + '")'
-    )
+    map_query = f"""
+    lat = from(bucket: "{bucket}")
+    |> range(start: {range})
+    |> filter(fn: (r) => r["_measurement"] == "{measurement}")
+    |> filter(fn: (r) => r["_field"] == "latitude")
+    |> aggregateWindow(every: 1d , fn: last)
+    |> last()
 
-    map_query = (
-        'lat = from(bucket: "'
-        + bucket
-        + '") \
-    |> range(start: '
-        + range
-        + ') \
-    |> filter(fn: (r) => r["_measurement"] == "'
-        + measurement
-        + '") \
-    |> filter(fn: (r) => r["_field"] == "latitude") \
-    |> aggregateWindow(every: 1d , fn: last) \
-    |> last() \
-    \
-    long = from(bucket: "'
-        + bucket
-        + '") \
-    |> range(start: '
-        + range
-        + ') \
-    |> filter(fn: (r) => r["_measurement"] == "'
-        + measurement
-        + '") \
-    |> filter(fn: (r) => r["_field"] == "longitude") \
-    |> aggregateWindow(every: 1d , fn: last) \
-    |> last() \
-    \
-    measurement = from(bucket: "'
-        + bucket
-        + '") \
-    |> range(start: '
-        + range
-        + ') \
-    |> filter(fn: (r) => r["_measurement"] == "'
-        + measurement
-        + '") \
-    |> filter(fn: (r) => r["_field"] == "'
-        + fieldname
-        + '") \
-    |> aggregateWindow(every: 1d , fn: last) \
-    |> last() \
-    \
-    alt = from(bucket: "'
-        + bucket
-        + '") \
-    |> range(start: '
-        + range
-        + ') \
-    |> filter(fn: (r) => r["_measurement"] == "'
-        + measurement
-        + '") \
-    |> filter(fn: (r) => r["_field"] == "altitude") \
-    |> aggregateWindow(every: 1d , fn: last) \
-    |> last() \
-    \
-    union(tables: [alt, lat, long, measurement]) \
-    |> group(columns: ["device"], mode: "by") \
-    |> pivot(rowKey: ["_time"], columnKey: ["_field"],  valueColumn: "_value") \
-    |> group()'
-    )
+    long = from(bucket: "{bucket}")
+    |> range(start: {range})
+    |> filter(fn: (r) => r["_measurement"] == "{measurement}")
+    |> filter(fn: (r) => r["_field"] == "longitude")
+    |> aggregateWindow(every: 1d , fn: last)
+    |> last()
+
+    measurement = from(bucket: "{bucket}")
+    |> range(start: {range})
+    |> filter(fn: (r) => r["_measurement"] == "{measurement}")
+    |> filter(fn: (r) => r["_field"] == "{fieldname}")
+    |> aggregateWindow(every: 1d , fn: last)
+    |> last()
+
+    alt = from(bucket: "{bucket}")
+    |> range(start: {range})
+    |> filter(fn: (r) => r["_measurement"] == "{measurement}")
+    |> filter(fn: (r) => r["_field"] == "altitude")
+    |> aggregateWindow(every: 1d , fn: last)
+    |> last()
+
+    union(tables: [alt, lat, long, measurement])
+    |> group(columns: ["device"], mode: "by")
+    |> pivot(rowKey: ["_time"], columnKey: ["_field"],  valueColumn: "_value")
+    |> group()
+    """
 
     # TODO: Implement processing of value query
     query = map_query
@@ -130,6 +93,7 @@ def export_moisture_map_data():
             jsonObj["values"] = valuesArray
 
         else:
+
             print("unknown query type: " + str(query_type))
 
         jsonObj["timestamp"] = str(datetime.now())

@@ -4,7 +4,7 @@ from .common.secrets import get_secret
 from flask import Flask, request
 import os
 
-from .export.export_influx import export_moisture_map_data
+from .export.map_overview import export_moisture_map_data
 
 from .ttn import handle_ttn_message, write_test_data
 
@@ -47,7 +47,8 @@ def moistureData():
     """
     This method exports the moisture data for the current day.
     """
-    return export_moisture_map_data(), 200
+    days = request.args.get("days", 1, type=int)
+    return export_moisture_map_data(days), 200
 
 
 development_mode = os.environ.get("DEVELOPMENT_MODE")
