@@ -53,6 +53,9 @@ def moistureData():
 
 development_mode = os.environ.get("DEVELOPMENT_MODE")
 if development_mode == "true":
+    from flask_cors import CORS
+
+    CORS(app)
 
     @app.route("/insertTestData", methods=["GET", "POST"])
     def insertTestData():
