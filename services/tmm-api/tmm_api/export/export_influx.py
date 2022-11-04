@@ -64,38 +64,38 @@ def export_moisture_map_data_legacy():
         query_api = client.query_api()
         result = query_api.query(query=query)
 
-        jsonObj = {}
+        json_obj = {}
 
         if query_type == "map":
-            mapdataArray = []
+            mapdata_array = []
             for record in result[0].records:
-                jsonRecord = {}
-                jsonRecord["device"] = record.values["device"]
-                jsonRecord["altitude"] = record.values["altitude"]
-                jsonRecord[fieldname] = record.values[fieldname]
-                jsonRecord["latitude"] = record.values["latitude"]
-                jsonRecord["longitude"] = record.values["longitude"]
+                json_record = {}
+                json_record["device"] = record.values["device"]
+                json_record["altitude"] = record.values["altitude"]
+                json_record[fieldname] = record.values[fieldname]
+                json_record["latitude"] = record.values["latitude"]
+                json_record["longitude"] = record.values["longitude"]
                 if record.values[fieldname] is not None:
-                    mapdataArray.append(jsonRecord)
+                    mapdata_array.append(json_record)
 
-            jsonObj["records"] = mapdataArray
+            json_obj["records"] = mapdata_array
 
         elif query_type == "value":
-            valuesArray = []
+            values_array = []
             for sensor in result:
                 for record in sensor.records:
-                    jsonRecord = {}
-                    jsonRecord["measurement"] = str(record.get_measurement())
-                    jsonRecord[record.get_field()] = str(record.get_value())
-                    jsonRecord["timestamp"] = str(record.get_time())
-                    jsonRecord["deviceId"] = str(record.values["device"])
-                    valuesArray.append(jsonRecord)
-            jsonObj["values"] = valuesArray
+                    json_record = {}
+                    json_record["measurement"] = str(record.get_measurement())
+                    json_record[record.get_field()] = str(record.get_value())
+                    json_record["timestamp"] = str(record.get_time())
+                    json_record["deviceId"] = str(record.values["device"])
+                    values_array.append(json_record)
+            json_obj["values"] = values_array
 
         else:
 
             print("unknown query type: " + str(query_type))
 
-        jsonObj["timestamp"] = str(datetime.now())
+        json_obj["timestamp"] = str(datetime.now())
 
-        return json.dumps(jsonObj)
+        return json.dumps(json_obj)

@@ -13,7 +13,7 @@ def tests(session):
 def lint(session):
     session.run("poetry", "install", external=True)
     session.run("poetry", "run", "black", "--check", ".", external=True)
-    session.run("poetry", "run", "flake8", ".", external=True)
+    session.run("poetry", "run", "ruff", ".", external=True)
 
 
 @nox.session(python=False)

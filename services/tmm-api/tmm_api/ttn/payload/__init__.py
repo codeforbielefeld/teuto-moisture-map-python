@@ -1,4 +1,3 @@
-from typing import Dict
 from .PayloadParser import PayloadParser
 from .DraginoLSE01 import DraginoLSE01
 
@@ -19,7 +18,7 @@ def parse_payload(payload: dict) -> dict:
     return dict(**common_attributes, **specific_attributes)
 
 
-__parsers: Dict[str, PayloadParser] = {}
+__parsers: dict[str, PayloadParser] = {}
 
 
 def _get_instance(brand: str, model: str) -> PayloadParser:
@@ -64,12 +63,12 @@ def _parse_common_attributes(json: dict) -> dict:
     except Exception:
         altitude = 0.0
 
-    return dict(
-        latitude=latitude,
-        longitude=longitude,
-        altitude=altitude,
-        device_id=device_id,
-        device_brand=device_brand,
-        device_model=device_model,
-        received_at=received_at,
-    )
+    return {
+        "latitude": latitude,
+        "longitude": longitude,
+        "altitude": altitude,
+        "device_id": device_id,
+        "device_brand": device_brand,
+        "device_model": device_model,
+        "received_at": received_at,
+    }

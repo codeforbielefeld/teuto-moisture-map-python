@@ -30,9 +30,7 @@ class TestDraginoParser(unittest.TestCase):
             self.assertEqual(data["moisture"], 23.42, "Moisture value not ok")
 
             self.assertEqual(data["battery_unit"], "V", "Battery unit not ok")
-            self.assertEqual(
-                data["conductivity_unit"], "uS/cm", "Conductivity unit not ok"
-            )
+            self.assertEqual(data["conductivity_unit"], "uS/cm", "Conductivity unit not ok")
             self.assertEqual(data["temperature_unit"], "°C", "Temperature unit not ok")
             self.assertEqual(data["moisture_unit"], "%", "Moisture unit not ok")
 

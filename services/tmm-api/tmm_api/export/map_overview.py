@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Dict, List
 from zoneinfo import ZoneInfo
 import json
 
@@ -56,23 +55,25 @@ def export_moisture_map_data(days: int = 1) -> str:
         query_api = client.query_api()
         results = query_api.query(query=query)
 
-        jsonObj: Dict[str, str | List[Dict[str, str]]] = {}
-
-        mapdataArray = []
-        for result in results:
-            for record in result.records:
-                jsonRecord = {}
-                jsonRecord["device"] = record.values["device"]
-                jsonRecord["altitude"] = record.values["altitude"]
-                jsonRecord[fieldname] = record.values[fieldname]
-                jsonRecord["latitude"] = record.values["latitude"]
-                jsonRecord["longitude"] = record.values["longitude"]
-                if record.values[fieldname] is not None:
-                    mapdataArray.append(jsonRecord)
-
-        jsonObj["records"] = mapdataArray
-        jsonObj["timestamp"] = (
-            datetime.now().astimezone(ZoneInfo("Europe/Berlin")).isoformat()
+        return json.dumps(
+            {
+                "records": [
+                    dict(
+                        [
+                            [key, record.values[key]]
+                            for key in [
+                                "device",
+                                "altitude",
+                                "latitude",
+                                "longitude",
+                                fieldname,
+                            ]
+                        ]
+                    )
+                    for result in results
+                    for record in result.records
+                    if record.values[fieldname] is not None
+                ],
+                "timestamp": datetime.now().astimezone(ZoneInfo("Europe/Berlin")).isoformat(),
+            }
         )
-
-        return json.dumps(jsonObj)

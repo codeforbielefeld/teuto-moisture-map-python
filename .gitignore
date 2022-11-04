@@ -7,5 +7,6 @@ __pycache__/
 dist/
 .mypy_cache
 .nox
+.ruff_cache
 
 *scratch*

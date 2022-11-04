@@ -24,7 +24,7 @@ app = Flask(__name__)
 
 
 @app.post("/incomingMessages")
-def incomingMessages():
+def incoming_messages():
     """
     This method accepts JSON payloads from TTN, unmarshals the required information and persists them
     """
@@ -43,7 +43,7 @@ def incomingMessages():
 
 
 @app.get("/moistureData")
-def moistureData():
+def moisture_data():
     """
     This method exports the moisture data for the current day.
     """
@@ -58,7 +58,7 @@ if development_mode == "true":
     CORS(app)
 
     @app.route("/insertTestData", methods=["GET", "POST"])
-    def insertTestData():
+    def insert_test_data():
         """
         This method writes test data into the influx database for test purposes
         """
