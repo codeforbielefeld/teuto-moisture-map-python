@@ -19,9 +19,8 @@ pymongo = "^4.2.0"
 mypy = "^0.971"
 ipykernel = "^6.15.1"
 black = "^22.6.0"
-flake8 = "^5.0.4"
-flake8-bugbear = "^22.8.23"
 pytest = "^7.1.2"
+ruff = "^0.0.99"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -31,3 +30,22 @@ build-backend = "poetry.core.masonry.api"
 dwd-import = 'dwd_import.dwd_import:run'
 dwd-stations = 'dwd_import.dwd_stations:run'
 mongo-test = 'dwd_import.db.mongo:test'
+
+[tool.ruff]
+line-length = 120
+select = [
+    "C","E","F","W","B","Q", "N","U"
+    #,"D" # todo
+    ]
+ignore = ["E501"]
+exclude = [
+    ".git",
+    "__pycache__",
+    "*.egg-info",
+    ".nox",
+    ".pytest_cache",
+    ".mypy_cache"
+    ]
+
+[tool.black]
+line-length = 120

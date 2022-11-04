@@ -1,4 +1,3 @@
-from typing import List
 from datetime import datetime, date
 
 import rasterio as ri
@@ -25,14 +24,12 @@ def get_moisture_single(day: date, lon: float, lat: float):
         rm, cm = src.shape
         r, c = src.index(x[0], y[0])
         rm, cm = src.shape
-        assert (
-            0 <= r <= rm and 0 <= c <= cm
-        ), f"Coordinates out of bounds! {lon, lat} -> {r,c}"
+        assert 0 <= r <= rm and 0 <= c <= cm, f"Coordinates out of bounds! {lon, lat} -> {r,c}"
         data = src.read(1)[r, c]
         return data
 
 
-def get_moisture(day: date, lons: List[float], lats: List[float]):
+def get_moisture(day: date, lons: list[float], lats: list[float]):
     with fetch_moisture(day) as src:
         x, y = transformer.transform(lons, lats)
         xy = [[x, y] for x, y in zip(x, y)]
@@ -61,9 +58,7 @@ radolan_prj = 'PROJCS["Stereographic_North_Pole",GEOGCS["GCS_unnamed ellipse",DA
 radolan_transformer = Transformer.from_crs(wgs84, CRS(radolan_prj), always_xy=True)
 
 
-def get_precipitation(
-    hour: datetime, lons: List[float], lats: List[float], recent: bool = True
-):
+def get_precipitation(hour: datetime, lons: list[float], lats: list[float], recent: bool = True):
     with fetch_precipitation(hour, recent) as src:
         xs, ys = radolan_transformer.transform(lons, lats)
         xy = xy = [[x, y] for x, y in zip(xs, ys)]

@@ -1,6 +1,5 @@
 import os
 from datetime import datetime, time
-from typing import List
 
 from influxdb_client import InfluxDBClient, Point
 
@@ -16,7 +15,7 @@ class InfluxDB(DeviceDB, MoistureDB):
     def get_influx_client(self):
         return InfluxDBClient.from_env_properties()
 
-    def get_devices(self) -> List[Device]:
+    def get_devices(self) -> list[Device]:
         query = f"""from(bucket: "{self.bucket}")
         |> range(start: -7d)
         |> filter(fn: (r) => r["_measurement"] == "moisture")
@@ -39,7 +38,7 @@ class InfluxDB(DeviceDB, MoistureDB):
                 for record in result[0].records
             ]
 
-    def write_moisture(self, measurements: List[MoistureMeasurement]):
+    def write_moisture(self, measurements: list[MoistureMeasurement]):
         points = (
             Point("dwd_moisture")
             .tag("device", data.device.device_id)

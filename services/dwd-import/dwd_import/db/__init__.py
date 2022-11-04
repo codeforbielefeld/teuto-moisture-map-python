@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List
 from dwd_import.models import (
     DWDStation,
     Device,
@@ -10,33 +9,31 @@ from dwd_import.models import (
 
 class MoistureDB(ABC):
     @abstractmethod
-    def write_moisture(self, measurements: List[MoistureMeasurement]):
+    def write_moisture(self, measurements: list[MoistureMeasurement]):
         pass
 
 
 class DeviceDB(ABC):
     @abstractmethod
-    def get_devices(self) -> List[Device]:
+    def get_devices(self) -> list[Device]:
         pass
 
 
 class StationDB(ABC):
     @abstractmethod
-    def get_stations(self) -> List[DWDStation]:
+    def get_stations(self) -> list[DWDStation]:
         pass
 
     @abstractmethod
-    def write_stations(self, stations: List[DWDStation]):
+    def write_stations(self, stations: list[DWDStation]):
         pass
 
 
 class PrecipitationAverageDB(ABC):
     @abstractmethod
-    def write_precipitation_average(self, averages: List[PrecipitationAverage]):
+    def write_precipitation_average(self, averages: list[PrecipitationAverage]):
         pass
 
     @abstractmethod
-    def get_precipitation_average(
-        self, station: DWDStation
-    ) -> List[PrecipitationAverage]:
+    def get_precipitation_average(self, station: DWDStation) -> list[PrecipitationAverage]:
         pass

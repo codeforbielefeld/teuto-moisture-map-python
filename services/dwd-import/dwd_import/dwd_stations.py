@@ -1,6 +1,5 @@
 import threading
 
-from typing import List, Dict
 
 import requests
 from io import BytesIO, TextIOWrapper
@@ -15,36 +14,36 @@ from pyproj import Geod
 from dwd_import.models import DWDStation, PrecipitationMeasurement
 
 
-__dataset_urls: Dict[str, str] | None = None
+__dataset_urls: dict[str, str] | None = None
 __dataset_urls_lock = threading.Lock()
 
 
-def get_precipitation_dataset_urls() -> Dict[str, str]:
+def get_precipitation_dataset_urls() -> dict[str, str]:
     """Returns a dict mapping station IDs to urls"""
     global __dataset_urls
     with __dataset_urls_lock:
         if __dataset_urls:
             return __dataset_urls
-        url = "https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/daily/more_precip/historical/"
+        url = (
+            "https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/daily/more_precip/historical/"
+        )
         with requests.get(url) as page:
             soup = BeautifulSoup(page.text, "html.parser")
             __dataset_urls = dict(
-                map(
-                    lambda link: (link[14:19], url + link),
-                    filter(
-                        lambda link: link.startswith("tageswerte_RR_"),
-                        map(lambda a: a.get("href"), soup.find_all("a")),
-                    ),
-                )
+                [
+                    [link[14:19], url + link]
+                    for link in (a.get("href") for a in soup.find_all("a"))
+                    if link.startswith("tageswerte_RR_")
+                ]
             )
         return __dataset_urls
 
 
-__stations: List[DWDStation] | None = None
+__stations: list[DWDStation] | None = None
 __stations_lock = threading.Lock()
 
 
-def get_stations() -> List[DWDStation]:
+def get_stations() -> list[DWDStation]:
     global __stations
     with __stations_lock:
         if __stations:
@@ -59,11 +58,7 @@ def get_stations() -> List[DWDStation]:
             return lambda line: line[start:end].strip()
 
         def rfield(field_ref: str, prev_field: str | None):
-            start = (
-                line_reference.find(prev_field) + len(prev_field) + 1
-                if prev_field
-                else 0
-            )
+            start = line_reference.find(prev_field) + len(prev_field) + 1 if prev_field else 0
             end = line_reference.find(field_ref) + len(field_ref)
             return lambda line: line[start:end].strip()
 
@@ -96,7 +91,8 @@ def get_stations() -> List[DWDStation]:
         result = []
         with requests.get(url, stream=True) as resp:
             for line in resp.text.splitlines()[2:]:
-                result.append(parse_station(line))
+                if parse_station_id(line) in datasets:
+                    result.append(parse_station(line))
         __stations = result
         return __stations
 
@@ -109,9 +105,7 @@ def distance(lon1: float, lat1: float, lon2: float, lat2: float):
 
 
 def nearest_station(lon: float, lat: float) -> DWDStation:
-    return min(
-        get_stations(), key=lambda station: distance(lon, lat, station.lon, station.lat)
-    )
+    return min(get_stations(), key=lambda station: distance(lon, lat, station.lon, station.lat))
 
 
 def nearest_active_station(lon: float, lat: float) -> DWDStation:
@@ -127,25 +121,19 @@ def nearest_active_station(lon: float, lat: float) -> DWDStation:
     )
 
 
-def get_precipitation(station: DWDStation) -> List[PrecipitationMeasurement]:
+def get_precipitation(station: DWDStation) -> list[PrecipitationMeasurement]:
     with requests.get(station.historic_precipitation_dataset_url) as resp:
         zipfile = ZipFile(BytesIO(resp.content))
-        product_file_name = next(
-            (file for file in zipfile.namelist() if file.startswith("produkt")), None
-        )
+        product_file_name = next((file for file in zipfile.namelist() if file.startswith("produkt")), None)
         assert product_file_name, "No product file found in downloaded zip"
         product_file = zipfile.open(product_file_name, "r")
         result = []
-        for row in DictReader(
-            TextIOWrapper(product_file), delimiter=";", skipinitialspace=True
-        ):
+        for row in DictReader(TextIOWrapper(product_file), delimiter=";", skipinitialspace=True):
             try:
                 rs = float(row.get("RS"))  # type: ignore
                 rsf = int(row.get("RSF"))  # type: ignore
                 qn = int(row.get("QN_6"))  # type: ignore
-                measurement_date = datetime.strptime(
-                    row.get("MESS_DATUM"), "%Y%m%d"  # type: ignore
-                ).date()
+                measurement_date = datetime.strptime(row.get("MESS_DATUM"), "%Y%m%d").date()  # type: ignore
                 if rs != -999:
                     result.append(
                         PrecipitationMeasurement(
@@ -157,9 +145,7 @@ def get_precipitation(station: DWDStation) -> List[PrecipitationMeasurement]:
                         )
                     )
                 else:
-                    print(
-                        f"Row without precipitation value! station: {station.station_id}, row: {row}"
-                    )
+                    print(f"Row without precipitation value! station: {station.station_id}, row: {row}")
             except Exception as e:
                 print(f"Could not parse row: {row}, eror: {e}")
         return result

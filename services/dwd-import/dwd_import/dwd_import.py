@@ -10,7 +10,7 @@ from .db.influx import InfluxDB
 from dwd_import.models import MoistureMeasurement
 
 
-class App(object):
+class App:
     def moisture(self, influx: Boolean = False):
         end = date.today().replace(day=1)
         start = date(2022, 6, 1)
@@ -61,7 +61,7 @@ class App(object):
 
 def run():
     # disable pager
-    fire.core.Display = lambda lines, out: print(*lines, file=out)
+    fire.core.Display = lambda lines, out: print(*lines, file=out)  # noqa: E731
     fire.Fire(App)
 
 
