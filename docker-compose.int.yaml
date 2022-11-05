@@ -1,0 +1,31 @@
+##############################################
+# Integration test setup for the GH workflow #
+##############################################
+
+version: "3.9"
+services:
+  tmm-api:
+    image: ${TMM_API_IMAGE_NAME}
+    depends_on:
+      - influx
+    environment:
+      INFLUX_CONFIG_FILE: /run/secrets/influx_config      
+      TMM_BUCKET_FILE: /run/secrets/tmm_bucket
+    secrets:
+      - influx_config
+      - tmm_bucket
+    ports:
+      - "5000:5000"
+
+  influx:
+    image: influxdb:2.2.0-alpine
+    ports:
+      - "8086:8086"
+    env_file:
+      - ./examples/influx_docker.env
+
+secrets:
+  influx_config: 
+    file: ./examples/influx_config.ini
+  tmm_bucket:
+    file: ./examples/tmm_bucket

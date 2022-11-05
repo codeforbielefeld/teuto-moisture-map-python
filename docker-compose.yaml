@@ -1,0 +1,127 @@
+#####################
+# Development setup #
+#####################
+
+version: "3.9"
+services:
+  tmm-api:
+    build: services/tmm-api
+    depends_on:
+      - influx
+    environment:
+      INFLUX_CONFIG_FILE: /run/secrets/influx_config
+      TMM_BUCKET_FILE: /run/secrets/tmm_bucket
+      TMM_API_KEY_FILE: /run/secrets/tmm_api_key
+      DEVELOPMENT_MODE: true
+    secrets:
+      - influx_config
+      - tmm_bucket
+      - tmm_api_key
+    ports:
+      - "5000:5000"
+
+  influx:
+    image: influxdb:2.2.0-alpine
+    volumes:
+      - influxdb-storage:/var/lib/influxdb
+    ports:
+      - "8086:8086"
+    env_file:
+      - ./examples/influx_docker.env
+
+  dwd-moisture:
+    build: services/dwd-import
+    command: dwd-import moisture --influx=True
+    depends_on:
+      - influx
+    env_file:
+      - .dev.env
+
+  dwd-import:
+    build: services/dwd-import
+    # We keep the container running as a dirty hack to run scheduled commands in it
+    # to avoid having to build the image beforehand
+    command: tail -F /dev/null
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.fetch_precipitaiton.schedule: "@every 30s"
+      ofelia.job-exec.fetch_precipitaiton.command: "dwd-import precipitation"
+    env_file:
+      - .dev.env
+    depends_on:
+      - mongo
+      - influx
+  dwd-mongo-test:
+    build: services/dwd-import
+    command: mongo-test 
+    env_file:
+      - .dev.env
+    depends_on:
+      - mongo
+      - influx
+  scheduler:
+    image: mcuadros/ofelia:latest
+    depends_on:
+      - dwd-import
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    #labels:
+    #  ofelia.job-local.my-test-job.schedule: "@every 1m"
+    #  ofelia.job-local.my-test-job.command: "date"
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: /data/postgres
+    volumes:
+      - postgres-storage:/data/postgres
+    ports:
+      - "5432:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    depends_on:
+      - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin-storage:/var/lib/pgadmin
+
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+  mongo:
+    image: mongo
+    restart: always    
+    env_file:
+      - .dev.env
+    volumes:
+      - mongodb-storage:/data/db
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    env_file:
+      - .dev.env
+    depends_on:
+      - mongo
+
+volumes:
+  influxdb-storage: {}
+  postgres-storage: {}
+  pgadmin-storage: {}
+  mongodb-storage: {}
+
+secrets:
+  influx_config: 
+    file: ./examples/influx_config.ini
+  tmm_bucket:
+    file: ./examples/tmm_bucket
+  tmm_api_key:
+    file: ./examples/tmm_api_key

@@ -1,44 +1,37 @@
 # Teuto Moisture Map (Python)
 
-This project contains a small python app that acts as the receiving end for a webhook in TheThingsNetwork. The purpose of this app is to collect environmental data from a number of sensors and store the sensor's readings in a database.
+## Configuration
 
----
+Configuration is done via the .dev.env file
 
-**! In its current state the app is but a prototype !**
+## Running the application in development mode
 
----
+Simply run:
 
-## Supported sensors
+    docker compose up --build
 
-As of now the app has only been tested with the Dragino Moisture Sensor (<http://www.dragino.com/>). Extracting the readings from the payload might not work if a different sensor is used.
+Now the TMM API is reachable at localhost:5000 and an InfluxDB is reachable at localhost:8086.
 
-## Prerequisites
+## Post data
 
-1. The sensor must be registered in TTN (<https://www.thethingsnetwork.org/>).
-2. An Application must be created in TTN and the sensor needs to be assigned to it.
-3. Within the Application, a webhook must be created that points to the correct hostname, port and path.
-4. As of now the app only works with InfluxDB (<https://www.influxdata.com/>). You either need an InfluxDB 2.0 Cloud account or some other host running InfluxDB 2.0.
-5. Put your InfluxDB 2.0 connection configuration into a file called **config.ini** (see: <https://influxdb-client.readthedocs.io/en/latest/api.html#influxdb_client.InfluxDBClient.from_config_file>)
+You can post new examples via <http://localhost:5000/incomingMessages> with json body eg. `services/ttm-api/test/dragino_ttn_payload.json` and header `{ webhook-api-key: <yourApiKey> // see .dev.env file }`
 
-If everything has been set up correctly, you should see measurements piling into your selected InfluxDB bucket :-)
+E.g. from the `services/ttm-api/test` directory run:
 
-## Running the app
+    curl -X POST http://localhost:5000/incomingMessages -H "webhook-api-key: tmm-api-key" -H "Content-Type: application/json" -d @dragino_ttn_payload.json
 
-To run the app without docker:
+## Retrieving data
 
-    python app.py
+Navigate to <http://localhost:5000/moistureData> to retrieve the latest moisture data, (will probably be empty).
 
-Building and running the docker image:
+## Insert test data
 
-    docker build . -t your/tag
-    docker run --env TMM-BUCKET=tmm-bucket --env TMM_API_KEY=foo -p 0.0.0.0:5000:5000 your/tag
+Navigate to <http://localhost:5000/insertTestData> to insert some random test for the last days
 
-Make sure that port 5000 is reachable from the outside world.
+## Running the services without Docker
 
-## Running Tests
+See `.dev.env` for the required environment variables.
 
-To run all Tests in the project which start with _test_ run:
+If you like what you see and this fits your environment run `export $(echo $(cat .dev.env | sed 's/#.*//g'| xargs) | envsubst)`.
 
-```
-python -m unittest discover
-```
+Run the individual services as indicated in there individual Readmes using poetry.
