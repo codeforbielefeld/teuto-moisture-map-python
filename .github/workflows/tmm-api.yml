@@ -26,10 +26,10 @@ jobs:
       - run: poetry install
       - name: Tests
         run: poetry run pytest
-      - name: Typing
+      - name: Typing - mypy
         run: poetry run mypy .
-      - name: Lint - flake8
-        run: poetry run flake8
+      - name: Lint - ruff
+        run: poetry run ruff .
       - name: Lint - black
         run: poetry run black --check .
 
