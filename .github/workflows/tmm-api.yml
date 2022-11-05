@@ -34,7 +34,7 @@ jobs:
         run: poetry run black --check .
 
   tmm-docker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest    
     outputs:      
       TMM_API_IMAGE_NAME: ${{ steps.image-name.outputs.TMM_API_IMAGE_NAME}}
     steps:
@@ -80,6 +80,7 @@ jobs:
     env:
       DOCKER_HOST: ${{ secrets.DEV_DOCKER_HOST }}
     needs:
+      - tmm-checks
       - tmm-docker
     steps:
       - name: Check out repository code
@@ -113,6 +114,7 @@ jobs:
     env:
       DOCKER_HOST: ${{ secrets.DOCKER_HOST }}
     needs:
+      - tmm-checks
       - tmm-docker
     steps:
       - name: Check out repository code
