@@ -17,7 +17,7 @@ Run `pytest` to run tests.
 
 Run `black .` to format code using black.
 
-Run `flake8` to check for pep8 conformity.
+Run `ruff . --fix` for linting.
 
 Run `mypy .` to run type checks.
 
@@ -27,7 +27,9 @@ Run `gunicorn --bind 0.0.0.0:5000 tmm_api:app` to run the application using guni
 
 ## Doing things with nox
 
-Run `nox` to run pytest, black, flask8 and mypy.
+Run `nox` to run pytest, black, ruff and mypy.
+
+Run `nox -s serv` to start the development server.
 
 ## Doing things with docker
 
