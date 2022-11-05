@@ -11,7 +11,7 @@
 
 Run `poetry install` to install dependencies within a virtual environment managed by poetry.
 
-Run `poetry shell` to span a shell with the created virtual environment for following commands or prefix each by `poetry run`
+Run `poetry shell` to spawn a shell with the created virtual environment for following commands or prefix each by `poetry run`
 
 Run `pytest` to run tests.
 
