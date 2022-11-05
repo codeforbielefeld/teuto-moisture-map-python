@@ -6,12 +6,10 @@ services:
     environment:
       INFLUX_CONFIG_FILE: /run/secrets/prod_tmm_influx_config      
       TMM_BUCKET_FILE: /run/secrets/prod_tmm_bucket
-      TMM_API_KEY_FILE: /run/secrets/prod_tmm_api_key
       PORT: 5005
     secrets:
       - prod_tmm_influx_config
       - prod_tmm_bucket
-      - prod_tmm_api_key
     ports:
       - "5005:5005"
     deploy:
@@ -27,5 +25,4 @@ secrets:
     external: true
   prod_tmm_bucket:
     external: true
-  prod_tmm_api_key:
-    external: true
+  

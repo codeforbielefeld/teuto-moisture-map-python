@@ -1,5 +1,9 @@
-name: Checks for dwd-import service
-on: [push]
+name: dwd-import
+on:
+ push:
+    paths:
+      - '/services/dwd-import/**'
+
 jobs:
   nox:
     runs-on: ubuntu-latest

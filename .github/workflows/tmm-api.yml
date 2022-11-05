@@ -1,6 +1,10 @@
-name: Build the tmm-api service
+name: tmm-api
 
-on: [push]
+on:
+ push:
+    paths:
+      - '/services/tmm-api/**'
+      - 'docker-compose.*.yaml'
 
 env:
   REGISTRY: ghcr.io
@@ -8,7 +12,7 @@ env:
   STACK_NAME: tmm-api
 
 jobs:
-  tmm-checks:
+  checks:
     defaults:
       run:
         working-directory: "services/tmm-api"
@@ -33,7 +37,7 @@ jobs:
       - name: Lint - black
         run: poetry run black --check .
 
-  tmm-docker:
+  docker:
     runs-on: ubuntu-latest    
     outputs:      
       TMM_API_IMAGE_NAME: ${{ steps.image-name.outputs.TMM_API_IMAGE_NAME}}
@@ -80,8 +84,8 @@ jobs:
     env:
       DOCKER_HOST: ${{ secrets.DEV_DOCKER_HOST }}
     needs:
-      - tmm-checks
-      - tmm-docker
+      - checks
+      - docker
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
@@ -94,7 +98,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           chmod 600 ~/.ssh/known_hosts
       - name: Set Environment
-        run: echo "TMM_API_IMAGE_NAME=${{ needs.tmm-docker.outputs.TMM_API_IMAGE_NAME }}" >> $GITHUB_ENV
+        run: echo "TMM_API_IMAGE_NAME=${{ needs.docker.outputs.TMM_API_IMAGE_NAME }}" >> $GITHUB_ENV
       - name: Create Docker Secrets if missing
         run: |
           docker secret inspect tmm_bucket > /dev/null || echo "${{ secrets.DEV_TMM_BUCKET }}" | docker secret create tmm_bucket -
@@ -112,10 +116,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     env:
-      DOCKER_HOST: ${{ secrets.DOCKER_HOST }}
+      DOCKER_HOST: ${{ secrets.PROD_DOCKER_HOST }}
     needs:
-      - tmm-checks
-      - tmm-docker
+      - checks
+      - docker
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
@@ -123,16 +127,15 @@ jobs:
         run: |
           mkdir -p -m 0700 ~/.ssh
           echo "Add domain to known hosts"
-          ssh-keyscan ${{ secrets.HOST_NAME }} >> ~/.ssh/known_hosts
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" >> ~/.ssh/id_rsa
+          echo "${{ secrets.PROD_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          echo "${{ secrets.PROD_SSH_PRIVATE_KEY }}" >> ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           chmod 600 ~/.ssh/known_hosts
       - name: Set Environment
-        run: echo "TMM_API_IMAGE_NAME=${{ needs.tmm-docker.outputs.TMM_API_IMAGE_NAME }}" >> $GITHUB_ENV
+        run: echo "TMM_API_IMAGE_NAME=${{ needs.docker.outputs.TMM_API_IMAGE_NAME }}" >> $GITHUB_ENV
       - name: Create Docker Secrets if missing
         run: |
-          docker secret inspect prod_tmm_bucket > /dev/null || echo "${{ secrets.TMM_BUCKET }}" | docker secret create prod_tmm_bucket -
-          docker secret inspect prod_tmm_api_key > /dev/null || echo "${{ secrets.TMM_API_KEY }}" | docker secret create prod_tmm_api_key -
-          docker secret inspect prod_tmm_influx_config > /dev/null || echo "${{ secrets.TMM_INFLUX_CONFIG }}" | docker secret create prod_tmm_influx_config -
+          docker secret inspect prod_tmm_bucket > /dev/null || echo "${{ secrets.PROD_TMM_BUCKET }}" | docker secret create prod_tmm_bucket -
+          docker secret inspect prod_tmm_influx_config > /dev/null || echo "${{ secrets.PROD_INFLUX_CONFIG }}" | docker secret create prod_tmm_influx_config -
       - name: Deploy Docker Stack
         run: docker stack deploy --prune --compose-file docker-compose.prod.yaml tmm-prod
