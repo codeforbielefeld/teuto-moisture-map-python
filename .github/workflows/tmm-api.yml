@@ -118,7 +118,7 @@ jobs:
     environment: production
     env:
       DOCKER_HOST: ${{ secrets.PROD_DOCKER_HOST }}
-      TMM_BUCKET: ${{ secrets.PROD_TMM_BUCKET }}
+      TMM_BUCKET: ${{ secrets.PROD_TMM_BUCKET_NAME }}
     needs:
       - checks
       - docker
