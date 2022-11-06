@@ -137,4 +137,4 @@ jobs:
       - name: Copy influx config to docker volume
         run: echo "${{ secrets.PROD_INFLUX_CONFIG }}" |  docker run -i  -v prod_tmm_influx_config:/dest alpine sh -c 'cat > /dest/influx_config.ini'
       - name: Deploy Docker Stack
-        run: docker-compose -f docker-compose.prod.yaml -p tmm-prod up -d --wait
+        run: docker-compose -f docker-compose.prod.yaml -p tmm-prod up -d --remove-orphans
