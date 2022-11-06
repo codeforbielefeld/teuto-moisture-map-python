@@ -5,6 +5,7 @@ on:
     paths:
       - "/services/tmm-api/**"
       - "docker-compose.*.yaml"
+      - "/.github/workflows/tmm-api.yml"
 
 env:
   REGISTRY: ghcr.io
