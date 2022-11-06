@@ -3,9 +3,9 @@ name: tmm-api
 on:
   push:
     paths:
-      - "/services/tmm-api/**"
+      - "services/tmm-api/**"
       - "docker-compose.*.yaml"
-      - "/.github/workflows/tmm-api.yml"
+      - ".github/workflows/tmm-api.yml"
 
 env:
   REGISTRY: ghcr.io
