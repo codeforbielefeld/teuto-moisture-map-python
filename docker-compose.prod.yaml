@@ -3,26 +3,16 @@ services:
 
   tmm-api:
     image: ${TMM_API_IMAGE_NAME}
+    pull_policy: always
     environment:
-      INFLUX_CONFIG_FILE: /run/secrets/prod_tmm_influx_config      
-      TMM_BUCKET_FILE: /run/secrets/prod_tmm_bucket
+      INFLUX_CONFIG_FILE: /prod_tmm_influx_config/influx_config.ini
+      TMM_BUCKET: ${TMM_BUCKET}
       PORT: 5005
-    secrets:
-      - prod_tmm_influx_config
-      - prod_tmm_bucket
     ports:
       - "5005:5005"
-    deploy:
-      replicas: 1
-      update_config:
-        failure_action: rollback
-        order: start-first
-      restart_policy:
-        condition: on-failure
-  
-secrets:
-  prod_tmm_influx_config: 
+    volumes:
+      - prod_tmm_influx_config:/prod_tmm_influx_config:ro
+
+volumes:
+  prod_tmm_influx_config:
     external: true
-  prod_tmm_bucket:
-    external: true
-  

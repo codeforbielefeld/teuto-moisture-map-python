@@ -1,10 +1,10 @@
 name: tmm-api
 
 on:
- push:
+  push:
     paths:
-      - '/services/tmm-api/**'
-      - 'docker-compose.*.yaml'
+      - "/services/tmm-api/**"
+      - "docker-compose.*.yaml"
 
 env:
   REGISTRY: ghcr.io
@@ -38,8 +38,8 @@ jobs:
         run: poetry run black --check .
 
   docker:
-    runs-on: ubuntu-latest    
-    outputs:      
+    runs-on: ubuntu-latest
+    outputs:
       TMM_API_IMAGE_NAME: ${{ steps.image-name.outputs.TMM_API_IMAGE_NAME}}
     steps:
       - name: Check out repository code
@@ -47,10 +47,9 @@ jobs:
       - name: Set image name
         id: image-name
         run: |
-          GITHUB_SHA_SHORT=$(echo ${{ github.sha }} | cut -c1-7)
-          TMM_API_IMAGE_NAME=${REGISTRY}/${REPOSITORY}/${STACK_NAME}:${GITHUB_SHA_SHORT}
+          TMM_API_IMAGE_NAME=${REGISTRY}/${REPOSITORY}/${STACK_NAME}:latest
           echo "TMM_API_IMAGE_NAME=${TMM_API_IMAGE_NAME}" >> $GITHUB_ENV
-          echo "TMM_API_IMAGE_NAME=${TMM_API_IMAGE_NAME}" >> $GITHUB_OUTPUT          
+          echo "TMM_API_IMAGE_NAME=${TMM_API_IMAGE_NAME}" >> $GITHUB_OUTPUT
       - uses: buildpacks/github-actions/setup-pack@v4.8.1
       - name: Build tmm-api image using buildpacks
         working-directory: "services/tmm-api"
@@ -75,6 +74,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push image
+        if: github.ref_name == 'main'
         run: docker push ${TMM_API_IMAGE_NAME}
 
   deploy-dev:
@@ -117,6 +117,7 @@ jobs:
     environment: production
     env:
       DOCKER_HOST: ${{ secrets.PROD_DOCKER_HOST }}
+      TMM_BUCKET: ${{ secrets.PROD_TMM_BUCKET }}
     needs:
       - checks
       - docker
@@ -133,9 +134,7 @@ jobs:
           chmod 600 ~/.ssh/known_hosts
       - name: Set Environment
         run: echo "TMM_API_IMAGE_NAME=${{ needs.docker.outputs.TMM_API_IMAGE_NAME }}" >> $GITHUB_ENV
-      - name: Create Docker Secrets if missing
-        run: |
-          docker secret inspect prod_tmm_bucket > /dev/null || echo "${{ secrets.PROD_TMM_BUCKET }}" | docker secret create prod_tmm_bucket -
-          docker secret inspect prod_tmm_influx_config > /dev/null || echo "${{ secrets.PROD_INFLUX_CONFIG }}" | docker secret create prod_tmm_influx_config -
+      - name: Copy influx config to docker volume
+        run: echo "${{ secrets.PROD_INFLUX_CONFIG }}" |  docker run -i  -v prod_tmm_influx_config:/dest alpine sh -c 'cat > /dest/influx_config.ini'
       - name: Deploy Docker Stack
-        run: docker stack deploy --prune --compose-file docker-compose.prod.yaml tmm-prod
+        run: docker-compose -f docker-compose.prod.yaml -p tmm-prod up -d --wait
