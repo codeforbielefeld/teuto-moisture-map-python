@@ -40,6 +40,7 @@ Otherwise run `docker build -t tmm-api . && docker run <set environment> -p 5000
 Alternatively use buildpacks to build the docker image `pack build tmm-api --buildpack paketo-buildpacks/python`.
 
 ## Local development
+
 Start a local influx instance using the top level docker compose setup using `docker compose up -d influx`.
 
 Start the development server using `nox -s serv`.
