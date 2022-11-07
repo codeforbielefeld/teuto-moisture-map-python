@@ -1,14 +1,10 @@
 # Teuto Moisture Map (Python)
 
-## Configuration
-
-Configuration is done via the .dev.env file
-
 ## Running the application in development mode
 
 Simply run:
 
-    docker compose up --build
+    docker compose up --build tmm-api
 
 Now the TMM API is reachable at localhost:5000 and an InfluxDB is reachable at localhost:8086.
 
@@ -29,9 +25,5 @@ Navigate to <http://localhost:5000/moistureData> to retrieve the latest moisture
 Navigate to <http://localhost:5000/insertTestData> to insert some random test for the last days
 
 ## Running the services without Docker
-
-See `.dev.env` for the required environment variables.
-
-If you like what you see and this fits your environment run `export $(echo $(cat .dev.env | sed 's/#.*//g'| xargs) | envsubst)`.
 
 Run the individual services as indicated in there individual Readmes using poetry.
