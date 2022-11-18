@@ -1,4 +1,5 @@
 from logging import Logger
+import logging
 from influxdb_client import Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
@@ -79,6 +80,15 @@ def handle_ttn_message(json: dict, logger: Logger):
     write_data(data)
 
 
-def write_test_data(num_devices: int, days: int, num_measurments: int = 24):
-    for data in generate_test_data(num_devices, days, num_measurments):
+def write_test_data(num_devices: int, days: int, num_measurements: int, logger: Logger):
+    logger.info(
+        "Generating test data for %s devices over %s days with %s daily measurements",
+        num_devices,
+        days,
+        num_measurements,
+    )
+    for data in generate_test_data(num_devices, days, num_measurements):
+        logger.info(
+            "Inserting data for device %s, lat: %s, lon %s", data["device_id"], data["latitude"], data["longitude"]
+        )
         write_data(data)

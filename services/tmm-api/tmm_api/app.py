@@ -66,7 +66,7 @@ if development_mode == "true":
             days = int(request.form["days"])
             devices = int(request.form["devices"])
             measurements = int(request.form["measurements"])
-            write_test_data(devices, days, measurements)
+            write_test_data(devices, days, measurements, app.logger)
             return "Success", 200
         return (
             """
