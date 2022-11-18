@@ -1,4 +1,5 @@
 # app.py
+from tmm_api.export.sensor_report import sensor_report
 from .common.influx import get_influx_client
 from .common.secrets import get_secret
 from flask import Flask, request
@@ -49,6 +50,15 @@ def moisture_data():
     """
     days = request.args.get("days", 1, type=int)
     return export_moisture_map_data(days), 200
+
+
+@app.get("/sensorData/<sensor>")
+def sensor_data(sensor):
+    """
+    This method exports the sensor report for a given sensor.
+    """
+    print("Sensor:", sensor)
+    return sensor_report(sensor), 200
 
 
 development_mode = os.environ.get("DEVELOPMENT_MODE")

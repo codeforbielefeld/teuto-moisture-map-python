@@ -1,33 +1,15 @@
-def query(sensor: int, bucket: str):
-    return f"""
-this_week_data = from(bucket: "{bucket}")
-  |> range(start: -7d)
-  |> filter(fn: (r) => r["_measurement"] == "moisture")
-  |> filter(fn: (r) => r["_field"] == "percent")
+import json
 
-this_week_data
-  |> filter(fn: (r) => r["device"] == "{sensor}")
-  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
-  |> yield(name: "current")
+from tmm_api.common.influx import get_influx_client
+from tmm_api.common.secrets import get_secret_or_fail
+from tmm_api.export.util import influx_table_daily_values_to_dict
+from .queries.sensor_report import query
 
-this_week_data
-  |> drop(columns: ["device", "device_brand", "device_model"])
-  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
-  |> yield(name: "currentAverage")
+bucket = get_secret_or_fail("TMM_BUCKET")
 
-last_year_data= from(bucket: "{bucket}")
-  |> range(start: -372d, stop: -365d)
-  |> filter(fn: (r) => r["_measurement"] == "moisture")
-  |> filter(fn: (r) => r["_field"] == "percent")
 
-last_year_data
-  |> filter(fn: (r) => r["device"] == "{sensor}")
-  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
-  |> timeShift(duration: 365d)
-  |> yield(name: "previousYear")
-
-last_year_data
-  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
-  |> timeShift(duration: 365d)
-  |> yield(name: "previousYearAverage")
-"""
+def sensor_report(sensor: str) -> str:
+    with get_influx_client() as client:
+        q, p = query(sensor, bucket)
+        tables = client.query_api().query(query=q, params=p)
+        return json.dumps(influx_table_daily_values_to_dict(tables))

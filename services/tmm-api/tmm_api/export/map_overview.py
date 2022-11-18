@@ -58,18 +58,16 @@ def export_moisture_map_data(days: int = 1) -> str:
         return json.dumps(
             {
                 "records": [
-                    dict(
-                        [
-                            [key, record.values[key]]
-                            for key in [
-                                "device",
-                                "altitude",
-                                "latitude",
-                                "longitude",
-                                fieldname,
-                            ]
+                    {
+                        key: record.values[key]
+                        for key in [
+                            "device",
+                            "altitude",
+                            "latitude",
+                            "longitude",
+                            fieldname,
                         ]
-                    )
+                    }
                     for result in results
                     for record in result.records
                     if record.values[fieldname] is not None
