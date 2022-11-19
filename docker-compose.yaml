@@ -21,7 +21,7 @@ services:
       - "5000:5000"
 
   influx:
-    image: influxdb:2.2.0-alpine
+    image: influxdb:2.5.1
     volumes:
       - influxdb-storage:/var/lib/influxdb
     ports:
