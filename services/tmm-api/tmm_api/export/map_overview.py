@@ -1,6 +1,6 @@
 from datetime import datetime
+from typing import Collection
 from zoneinfo import ZoneInfo
-import json
 
 from tmm_api.common.influx import get_influx_client
 from tmm_api.common.secrets import get_secret
@@ -11,7 +11,7 @@ fieldname = "percent"
 bucket = get_secret("TMM_BUCKET")
 
 
-def export_moisture_map_data(days: int = 1) -> str:
+def export_moisture_map_data(days: int = 1) -> dict[str, list[Collection[str]] | str]:
     start = f"-{days}d"
     window = f"{days}d"
 
@@ -55,23 +55,21 @@ def export_moisture_map_data(days: int = 1) -> str:
         query_api = client.query_api()
         results = query_api.query(query=query)
 
-        return json.dumps(
-            {
-                "records": [
-                    {
-                        key: record.values[key]
-                        for key in [
-                            "device",
-                            "altitude",
-                            "latitude",
-                            "longitude",
-                            fieldname,
-                        ]
-                    }
-                    for result in results
-                    for record in result.records
-                    if record.values[fieldname] is not None
-                ],
-                "timestamp": datetime.now().astimezone(ZoneInfo("Europe/Berlin")).isoformat(),
-            }
-        )
+        return {
+            "records": [
+                {
+                    key: record.values[key]
+                    for key in [
+                        "device",
+                        "altitude",
+                        "latitude",
+                        "longitude",
+                        fieldname,
+                    ]
+                }
+                for result in results
+                for record in result.records
+                if record.values[fieldname] is not None
+            ],
+            "timestamp": datetime.now().astimezone(ZoneInfo("Europe/Berlin")).isoformat(),
+        }

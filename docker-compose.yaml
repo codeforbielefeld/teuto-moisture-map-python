@@ -6,6 +6,7 @@ version: "3.9"
 services:
   tmm-api:
     build: services/tmm-api
+    #image: tmm-api
     depends_on:
       - influx
     environment:

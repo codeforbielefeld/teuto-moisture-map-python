@@ -1,4 +1,4 @@
-from logging import Logger
+from logging import getLogger
 from influxdb_client import Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
@@ -66,10 +66,11 @@ def write_data(data: dict):
         write_api.write(bucket=bucket, record=moisture_point)
 
 
-def handle_ttn_message(json: dict, logger: Logger):
+def handle_ttn_message(json: dict):
     """
     Handle an incomming TTN message
     """
+    logger = getLogger(__name__)
     logger.info("Received message: %s", str(json))
 
     data = parse_payload(json)

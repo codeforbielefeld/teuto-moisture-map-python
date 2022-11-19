@@ -1,8 +1,9 @@
 # app.py
+from fastapi import FastAPI, Form, Header, Response
+from fastapi.responses import HTMLResponse
 from tmm_api.export.sensor_report import sensor_report
 from .common.influx import get_influx_client
 from .common.secrets import get_secret
-from flask import Flask, request
 import os
 
 from .export.map_overview import export_moisture_map_data
@@ -17,69 +18,70 @@ from .ttn import handle_ttn_message, write_test_data
 apikey = get_secret("TMM_API_KEY")
 
 
-app = Flask(__name__)
+app = FastAPI()
 
 # =====================
 # Webhook web interface
 # =====================
 
 
-@app.post("/incomingMessages")
-def incoming_messages():
+@app.post("/incomingMessages", status_code=201)
+def incoming_messages(message: dict, response: Response, webhook_api_key: str | None = Header(None)):  # noqa: B008
     """
     This method accepts JSON payloads from TTN, unmarshals the required information and persists them
     """
-    request_apikey = request.headers.get(key="webhook-api-key", default=None)
 
-    if apikey is None or request_apikey == apikey:
-
-        if request.is_json:
-            message = request.get_json()
-            handle_ttn_message(message, app.logger)
-            return message, 201
-        return {"error": "Request must be JSON"}, 415
-
+    if apikey is None or webhook_api_key == apikey:
+        handle_ttn_message(message)
+        return message
     else:
-        return {"error": "Unauthorized"}, 401
+        response.status_code = 415
+        return {"error": "Unauthorized"}
 
 
 @app.get("/moistureData")
-def moisture_data():
+def moisture_data(days: int = 1):
     """
     This method exports the moisture data for the current day.
     """
-    days = request.args.get("days", 1, type=int)
-    return export_moisture_map_data(days), 200
+    return export_moisture_map_data(days)
 
 
-@app.get("/sensorData/<sensor>")
+@app.get("/sensorData/{sensor}")
 def sensor_data(sensor):
     """
     This method exports the sensor report for a given sensor.
     """
     print("Sensor:", sensor)
-    return sensor_report(sensor), 200
+    return sensor_report(sensor)
 
 
 development_mode = os.environ.get("DEVELOPMENT_MODE")
 if development_mode == "true":
-    from flask_cors import CORS
+    from fastapi.middleware.cors import CORSMiddleware
 
-    CORS(app)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
-    @app.route("/insertTestData", methods=["GET", "POST"])
-    def insert_test_data():
+    @app.post("/insertTestData")
+    def post_insert_test_data(days: int = Form(), devices: int = Form(), measurements: int = Form()):  # noqa: B008
         """
         This method writes test data into the influx database for test purposes
         """
-        if request.method == "POST":
-            days = int(request.form["days"])
-            devices = int(request.form["devices"])
-            measurements = int(request.form["measurements"])
-            write_test_data(devices, days, measurements)
-            return "Success", 200
-        return (
-            """
+        write_test_data(devices, days, measurements)
+        return "Success"
+
+    @app.get("/insertTestData", response_class=HTMLResponse)
+    def get_insert_test_data():
+        """
+        This method writes test data into the influx database for test purposes
+        """
+        return """
         <!doctype html>
         <html>
             <header><title>Insert test data</title></header>
@@ -92,22 +94,16 @@ if development_mode == "true":
                 </form>
             </body>
         </html>
-        """,
-            200,
-        )
+        """
 
 
 @app.get("/internal/health/self")
 def health():
-    return "", 200
+    return "Ok"
 
 
 @app.get("/internal/health/int")
 def health_int():
     influx = get_influx_client()
     assert influx.ping()
-    return "", 200
-
-
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
+    return "Ok"

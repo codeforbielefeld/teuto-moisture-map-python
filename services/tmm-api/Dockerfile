@@ -29,4 +29,4 @@ ENV PATH="/venv/bin:${PATH}" \
     VIRTUAL_ENV="/venv"
 
 #CMD ["flask","--app=ttn_hook:app",  "run", "--host=0.0.0.0"]
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "tmm_api:app"]
+ENTRYPOINT [ "uvicorn", "--host", "0.0.0.0", "--port", "5000", "tmm_api:app"]
