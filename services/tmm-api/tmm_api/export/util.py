@@ -17,7 +17,7 @@ def influx_table_daily_values_to_dict(tables: TableList) -> dict[str, list[Any]]
     return {
         table.records[0]["result"]: [
             {
-                "date": record.values["_time"].strftime("%Y-%m-%d"),
+                "date": record.values["_time"].date(),
                 record.values["_measurement"]: record.values["_value"],
             }
             for record in table.records

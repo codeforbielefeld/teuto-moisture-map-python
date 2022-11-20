@@ -1,7 +1,7 @@
 # app.py
 from fastapi import FastAPI, Form, Header, Response
 from fastapi.responses import HTMLResponse
-from tmm_api.export.sensor_report import sensor_report
+from tmm_api.export.sensor_report import SensorReport, sensor_report
 from .common.influx import get_influx_client
 from .common.secrets import get_secret
 import os
@@ -39,6 +39,11 @@ def incoming_messages(message: dict, response: Response, webhook_api_key: str | 
         return {"error": "Unauthorized"}
 
 
+# ============
+# Data exports
+# ============
+
+
 @app.get("/moistureData")
 def moisture_data(days: int = 1):
     """
@@ -47,14 +52,17 @@ def moisture_data(days: int = 1):
     return export_moisture_map_data(days)
 
 
-@app.get("/sensorData/{sensor}")
+@app.get("/sensorData/{sensor}", response_model=SensorReport)
 def sensor_data(sensor):
     """
     This method exports the sensor report for a given sensor.
     """
-    print("Sensor:", sensor)
     return sensor_report(sensor)
 
+
+# =====================
+# Development utilities
+# =====================
 
 development_mode = os.environ.get("DEVELOPMENT_MODE")
 if development_mode == "true":
@@ -95,6 +103,11 @@ if development_mode == "true":
             </body>
         </html>
         """
+
+
+# =============
+# Status checks
+# =============
 
 
 @app.get("/internal/health/self")
