@@ -43,11 +43,9 @@ def _convert_measurements(x) -> list[MoistureMeasurement]:
     return [MoistureMeasurement(moisture=m["moisture"], time=m["time"]) for m in x] if x is not None else []
 
 
-def sensor_report(
-    sensor: str, past_days: int = 6, resolution: ReportResolution = ReportResolution.DAILY
-) -> SensorReport:
+def sensor_report(sensor: str, records: int = 7, resolution: ReportResolution = ReportResolution.DAILY) -> SensorReport:
     with get_influx_client() as client:
-        q, p = query(sensor, get_bucket(), past_days, resolution.value)
+        q, p = query(sensor, get_bucket(), records, resolution.value)
         tables = client.query_api().query(query=q, params=p)
         res = influx_table_timed_values_to_dict(tables)
         return SensorReport(

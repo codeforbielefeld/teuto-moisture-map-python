@@ -2,6 +2,21 @@ from typing import Any
 from influxdb_client.client.flux_table import TableList
 
 
+def influx_table_windowed_values_to_dict(tables: TableList) -> dict[str, list[Any]]:
+    return {
+        table.records[0]["result"]: [
+            {
+                "start": record.values["_start"],
+                "stop": record.values["_stop"],
+                record.values["_measurement"]: record.values["_value"],
+            }
+            for record in table.records
+        ]
+        for table in tables
+        if len(table.records) > 0
+    }
+
+
 def influx_table_timed_values_to_dict(tables: TableList) -> dict[str, list[Any]]:
     return {
         table.records[0]["result"]: [

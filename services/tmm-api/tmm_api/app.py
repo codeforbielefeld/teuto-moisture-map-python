@@ -1,5 +1,5 @@
 # app.py
-from fastapi import FastAPI, Form, Header, Response
+from fastapi import FastAPI, Form, Header, Query, Response
 from fastapi.responses import HTMLResponse
 from tmm_api.export.sensor_report import ReportResolution, SensorReport, sensor_report
 from .common.influx import get_influx_client
@@ -53,11 +53,15 @@ def moisture_data(days: int = 1):
 
 
 @app.get("/sensorData/{sensor}", response_model=SensorReport)
-def sensor_data(sensor, days: int = 7, resolution: ReportResolution = ReportResolution.DAILY):
+def sensor_data(
+    sensor,
+    records: int = Query(7, gt=0, le=31),  # noqa: B008
+    resolution: ReportResolution = ReportResolution.DAILY,
+):
     """
     This method exports the sensor report for a given sensor.
     """
-    return sensor_report(sensor, past_days=days - 1, resolution=resolution)
+    return sensor_report(sensor, records=records, resolution=resolution)
 
 
 # =====================

@@ -12,6 +12,6 @@ def _get_query() -> str:
     return _query
 
 
-def query(sensor: str, bucket: str, num: int = 6, window: str = "1d"):
-    p = {"_bucket": bucket, "_device": sensor, "_pastDays": num, "_windowSize": window}
+def query(sensor: str, bucket: str, num: int = 7, window: str = "1d"):
+    p = {"_bucket": bucket, "_device": sensor, "_records": num, "_windowSize": window}
     return _get_query(), p
