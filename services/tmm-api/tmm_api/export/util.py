@@ -5,7 +5,7 @@ from influxdb_client.client.flux_table import TableList
 def influx_table_timed_values_to_dict(tables: TableList) -> dict[str, list[Any]]:
     return {
         table.records[0]["result"]: [
-            {"time": record.values["_time"].isoformat(), record.values["_measurement"]: record.values["_value"]}
+            {"time": record.values["_time"], record.values["_measurement"]: record.values["_value"]}
             for record in table.records
         ]
         for table in tables
