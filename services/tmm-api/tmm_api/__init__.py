@@ -7,4 +7,3 @@ app = app
 
 # Handler for AWS
 handler = Mangum(app)
-
