@@ -13,6 +13,7 @@ resource "aws_lambda_function" "api_lambda_function" {
 
   # Uncomment the next line if you have an M1 processor
   # architectures = [ "arm64" ] 
+  depends_on = [aws_cloudwatch_log_group.lambda_log]
 }
 
 # as per https://learn.hashicorp.com/tutorials/terraform/lambda-api-gateway
@@ -20,21 +21,17 @@ resource "aws_lambda_function" "api_lambda_function" {
 resource "aws_iam_role" "api_lambda_function_role" {
   name = "api-lambda-function-role"
 
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "lambda.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = "sts:AssumeRole"
+      Sid = ""
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+    }]
+  })
 }
 
 resource "aws_iam_role_policy_attachment" "api_lambda_function_policy_attachement" {
@@ -45,20 +42,23 @@ resource "aws_iam_role_policy_attachment" "api_lambda_function_policy_attachemen
 resource "aws_iam_policy" "api_lambda_function_policy" {
   name = "api-lambda-function-policy"
 
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      "Resource": "arn:aws:logs:*:*:*"
-    }
-  ]
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = "arn:aws:logs:*:*:*"
+      }
+    ]
+  })
 }
-EOF
+
+resource "aws_cloudwatch_log_group" "lambda_log" {
+  name = "/aws/lambda/${local.lambda_function_name}"
+
+  retention_in_days = local.lambda_log_retention
 }
