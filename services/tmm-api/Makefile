@@ -16,7 +16,7 @@ terraform/tfplan: dist/lambda_package.zip terraform/*.tf
 	cp -a dist/lambda_package.zip terraform
 	
 	cd terraform && \
-	terraform plan -out tfplan.plan
+	terraform plan -out tfplan
 
 
 deploy: terraform/tfplan
