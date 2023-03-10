@@ -1,10 +1,10 @@
+from typing import Union
 from .PayloadParser import PayloadParser
 
 
 class DraginoLSE01(PayloadParser):
     def parse_payload(self, payload: dict) -> dict:
-
-        retval: dict[str, str | float] = {}
+        retval: dict[str, Union[str, float]] = {}
 
         # Extracting the values from the message is specific to the sensor used
         # This implementation supports only the dragoni sensor as of now

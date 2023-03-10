@@ -36,7 +36,6 @@ def write_data(data: dict):
     Writes a parsed payload to the database
     """
     with get_influx_client() as client:
-
         write_api = client.write_api(write_options=SYNCHRONOUS)
 
         bat_point = (

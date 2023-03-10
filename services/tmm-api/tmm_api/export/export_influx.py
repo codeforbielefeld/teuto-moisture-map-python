@@ -60,7 +60,6 @@ def export_moisture_map_data_legacy():
         query = value_query
 
     with get_influx_client() as client:
-
         query_api = client.query_api()
         result = query_api.query(query=query)
 
@@ -93,7 +92,6 @@ def export_moisture_map_data_legacy():
             json_obj["values"] = values_array
 
         else:
-
             print("unknown query type: " + str(query_type))
 
         json_obj["timestamp"] = str(datetime.now())

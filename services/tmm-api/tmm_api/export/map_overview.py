@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Collection
+from typing import Collection, Union
 from zoneinfo import ZoneInfo
 
 from tmm_api.common.influx import get_influx_client
@@ -11,7 +11,7 @@ fieldname = "percent"
 bucket = get_secret("TMM_BUCKET")
 
 
-def export_moisture_map_data(days: int = 1) -> dict[str, list[Collection[str]] | str]:
+def export_moisture_map_data(days: int = 1) -> dict[str, Union[list[Collection[str]], str]]:
     start = f"-{days}d"
     window = f"{days}d"
 
@@ -51,7 +51,6 @@ def export_moisture_map_data(days: int = 1) -> dict[str, list[Collection[str]] |
     """
 
     with get_influx_client() as client:
-
         query_api = client.query_api()
         results = query_api.query(query=query)
 

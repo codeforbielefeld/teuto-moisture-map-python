@@ -1,13 +1,14 @@
 from dataclasses import dataclass
 import datetime
 from enum import Enum
+from typing import Union
 
 from tmm_api.common.influx import get_influx_client
 from tmm_api.common.secrets import get_secret_or_fail
 from tmm_api.export.util import influx_table_timed_values_to_dict
 from .queries.sensor_report import query
 
-_bucket: str | None = None
+_bucket: Union[str, None] = None
 
 
 def get_bucket() -> str:

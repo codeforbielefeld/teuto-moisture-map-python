@@ -1,4 +1,5 @@
 # app.py
+from typing import Union
 from fastapi import FastAPI, Form, Header, Query, Response
 from fastapi.responses import HTMLResponse
 from tmm_api.export.sensor_report import ReportResolution, SensorReport, sensor_report
@@ -26,7 +27,9 @@ app = FastAPI()
 
 
 @app.post("/incomingMessages", status_code=201)
-def incoming_messages(message: dict, response: Response, webhook_api_key: str | None = Header(None)):  # noqa: B008
+def incoming_messages(
+    message: dict, response: Response, webhook_api_key: Union[str, None] = Header(None)  # noqa: B008
+):
     """
     This method accepts JSON payloads from TTN, unmarshals the required information and persists them
     """

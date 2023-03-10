@@ -8,7 +8,6 @@ This class tests the regular expressions used to extract numbers and units of me
 
 
 class TestRegEx(unittest.TestCase):
-
     # numbers
     def test_extract_numbers_temperature(self):
         self.assertEqual(PayloadParser.extract_numbers_from_string("19.9 °C")[0], "19.9")
