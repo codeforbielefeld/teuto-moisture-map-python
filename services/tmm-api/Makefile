@@ -1,6 +1,6 @@
 build: dist/lambda_package.zip
 
-dist/lambda_package.zip: tmm_api/* pyproject.toml poetry.lock
+dist/lambda_package.zip: pyproject.toml poetry.lock $(shell find tmm_api)
 
 	poetry build
 
