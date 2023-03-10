@@ -9,17 +9,20 @@ dist/lambda_package.zip: tmm_api/* pyproject.toml poetry.lock
 	cd dist/lambda_package && \
 	zip -r ../lambda_package.zip . -x '*.pyc'	
 
-terraform/tfplan: build
-	cp dist/lambda_package.zip terraform
-	
-	cd terraform && \
-	terraform plan -out tfplan
 
 plan: terraform/tfplan
 
-deploy: plan
+terraform/tfplan: dist/lambda_package.zip terraform/*.tf
+	cp -a dist/lambda_package.zip terraform
+	
+	cd terraform && \
+	terraform plan -out tfplan.plan
+
+
+deploy: terraform/tfplan
 	cd terraform && \
 	terraform apply tfplan
+
 
 clean:
 	rm -rf dist terraform/tfplan terraform/lambda_package.zip
