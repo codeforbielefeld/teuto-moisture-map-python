@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 
 from pyproj import Geod
 
-from dwd_import.models import DWDStation, PrecipitationMeasurement
+from models import DWDStation, PrecipitationMeasurement
 
 
 __dataset_urls: dict[str, str] | None = None
