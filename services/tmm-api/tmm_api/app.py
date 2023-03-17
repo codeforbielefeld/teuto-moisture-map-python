@@ -14,13 +14,6 @@ from .export.map_overview import export_moisture_map_data
 from tmm_api import ttn
 
 
-# ===========
-# Config
-# ===========
-
-apikey = get_secret("TMM_API_KEY")
-
-
 app = FastAPI()
 
 # =====================
