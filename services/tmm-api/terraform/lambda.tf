@@ -14,6 +14,15 @@ resource "aws_lambda_function" "api_lambda_function" {
   # Uncomment the next line if you have an M1 processor
   # architectures = [ "arm64" ] 
   depends_on = [aws_cloudwatch_log_group.lambda_log]
+
+  environment {
+    variables = {
+      INFLUXDB_V2_URL   = var.influx_url
+      INFLUXDB_V2_ORG   = var.influx_org
+      INFLUXDB_V2_TOKEN = var.influx_token
+      TMM_BUCKET        = var.influx_bucket
+    }
+  }
 }
 
 # as per https://learn.hashicorp.com/tutorials/terraform/lambda-api-gateway
@@ -26,7 +35,7 @@ resource "aws_iam_role" "api_lambda_function_role" {
     Statement = [{
       Effect = "Allow"
       Action = "sts:AssumeRole"
-      Sid = ""
+      Sid    = ""
       Principal = {
         Service = "lambda.amazonaws.com"
       }
