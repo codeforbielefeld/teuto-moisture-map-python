@@ -45,6 +45,8 @@ def serv(session):
         external=True,
         env={
             "DEVELOPMENT_MODE": "true",
+            "ENABLE_WRITE": "true",
+            "TMM_AUTH_SECRET": "secret",
             "INFLUX_CONFIG_FILE": "../../examples/influx_config.local.ini",
             "TMM_BUCKET": "tmm-bucket",
         },

@@ -1,15 +1,17 @@
 # app.py
-from typing import Union
-from fastapi import FastAPI, Form, Header, Query, Response
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Form, Header, Query, Response, Path
+from fastapi.responses import HTMLResponse, PlainTextResponse
+from tmm_api.common.auth import get_digest, is_auth
 from tmm_api.export.sensor_report import ReportResolution, SensorReport, sensor_report
+from tmm_api.ttn.dragino import DraginoTtnMessage
+from tmm_api.ttn.payload import parse_payload
 from .common.influx import get_influx_client
 from .common.secrets import get_secret
 import os
 
 from .export.map_overview import export_moisture_map_data
 
-from .ttn import handle_ttn_message, write_test_data
+from tmm_api import ttn
 
 
 # ===========
@@ -24,22 +26,32 @@ app = FastAPI()
 # =====================
 # Webhook web interface
 # =====================
+write_enabled = os.environ.get("ENABLE_WRITE")
+if write_enabled == "true":
 
+    @app.post("/incomingMessages", status_code=201)
+    def incoming_messages(message: dict, response: Response, webhook_api_key: str = Header()):  # noqa: B008
+        """
+        This method accepts JSON payloads from TTN, unmarshals the required information and persists them
+        """
+        data = parse_payload(message)
+        user = data["device_id"]
 
-@app.post("/incomingMessages", status_code=201)
-def incoming_messages(
-    message: dict, response: Response, webhook_api_key: Union[str, None] = Header(None)  # noqa: B008
-):
-    """
-    This method accepts JSON payloads from TTN, unmarshals the required information and persists them
-    """
+        if is_auth(user, webhook_api_key):
+            ttn.write_data(data)
+            return message
+        else:
+            response.status_code = 415
+            return {"error": "Unauthorized"}
 
-    if apikey is None or webhook_api_key == apikey:
-        handle_ttn_message(message)
+    @app.post("/ttn/dragino", status_code=201)
+    def ttn_dragino(
+        message: DraginoTtnMessage, response: Response, X_Downlink_Apikey: str = Header()  # noqa: B008,N803
+    ):
+        if not is_auth(message.end_device_ids.device_id, X_Downlink_Apikey):
+            response.status_code = 415
+            return {"error": "Unauthorized"}
         return message
-    else:
-        response.status_code = 415
-        return {"error": "Unauthorized"}
 
 
 # ============
@@ -88,7 +100,7 @@ if development_mode == "true":
         """
         This method writes test data into the influx database for test purposes
         """
-        write_test_data(devices, days, measurements)
+        ttn.write_test_data(devices, days, measurements)
         return "Success"
 
     @app.get("/insertTestData", response_class=HTMLResponse)
@@ -110,6 +122,10 @@ if development_mode == "true":
             </body>
         </html>
         """
+
+    @app.get("/genKey/{user}", response_class=PlainTextResponse)
+    def gen_key(user: str = Path()):  # noqa: B008
+        return get_digest(user)
 
 
 # =============

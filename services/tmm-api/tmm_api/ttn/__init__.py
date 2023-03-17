@@ -1,11 +1,9 @@
-from logging import getLogger
 from influxdb_client import Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 from ..common.influx import get_influx_client
 from ..common.secrets import get_secret
 from .examples import generate_test_data
-from .payload import parse_payload
 
 
 # ===========
@@ -63,20 +61,6 @@ def write_data(data: dict):
         write_api.write(bucket=bucket, record=conductivity_point)
         write_api.write(bucket=bucket, record=temp_point)
         write_api.write(bucket=bucket, record=moisture_point)
-
-
-def handle_ttn_message(json: dict):
-    """
-    Handle an incomming TTN message
-    """
-    logger = getLogger(__name__)
-    logger.info("Received message: %s", str(json))
-
-    data = parse_payload(json)
-    logger.info("Parsed payload: %s", str(data))
-
-    logger.info("Writing to bucket: %s", bucket)
-    write_data(data)
 
 
 def write_test_data(num_devices: int, days: int, num_measurments: int = 24):
