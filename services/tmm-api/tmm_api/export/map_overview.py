@@ -35,7 +35,7 @@ def export_moisture_map_data(days: int = 1) -> MapData:
     |> range(start: {start})
     |> filter(fn: (r) => r["_measurement"] == "{measurement}")
     |> filter(fn: (r) => r["_field"] == "{fieldname}")    
-    |> filter(fn: (r) => exists r.device and exists r.latitude and exists r.longitude and exists r.altitude)
+    |> filter(fn: (r) => exists r.device and exists r.latitude and exists r.longitude)
     |> aggregateWindow(every: inf , fn: mean)
     |> last()
     """
