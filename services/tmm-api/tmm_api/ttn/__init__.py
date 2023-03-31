@@ -63,6 +63,6 @@ def write_data(data: dict):
         write_api.write(bucket=bucket, record=moisture_point)
 
 
-def write_test_data(num_devices: int, days: int, num_measurments: int = 24):
-    for data in generate_test_data(num_devices, days, num_measurments):
+def write_test_data(num_devices: int, days: int, num_measurements: int = 24):
+    for data in generate_test_data(num_devices, days, num_measurements):
         write_data(data)

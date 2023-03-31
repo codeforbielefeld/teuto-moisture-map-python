@@ -1,74 +1,63 @@
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Collection, Union
+from typing import Union
 from zoneinfo import ZoneInfo
 
 from tmm_api.common.influx import get_influx_client
 from tmm_api.common.secrets import get_secret
 
 
-measurement = "moisture"
-fieldname = "percent"
+measurement = "soil"
+fieldname = "soil_moisture"
 bucket = get_secret("TMM_BUCKET")
 
 
-def export_moisture_map_data(days: int = 1) -> dict[str, Union[list[Collection[str]], str]]:
+@dataclass
+class Record:
+    device: str
+    altitude: Union[float, None]
+    latitude: float
+    longitude: float
+    soil_moisture: float
+
+
+@dataclass
+class MapData:
+    records: list[Record]
+    timestamp: datetime
+
+
+def export_moisture_map_data(days: int = 1) -> MapData:
     start = f"-{days}d"
-    window = f"{days}d"
 
     query = f"""
-    measurement = from(bucket: "{bucket}")
+    from(bucket: "{bucket}")
     |> range(start: {start})
     |> filter(fn: (r) => r["_measurement"] == "{measurement}")
-    |> filter(fn: (r) => r["_field"] == "{fieldname}")
-    |> aggregateWindow(every: {window} , fn: mean)
+    |> filter(fn: (r) => r["_field"] == "{fieldname}")    
+    |> filter(fn: (r) => exists r.device and exists r.latitude and exists r.longitude and exists r.altitude)
+    |> aggregateWindow(every: inf , fn: mean)
     |> last()
-
-    lat = from(bucket: "{bucket}")
-    |> range(start: {start})
-    |> filter(fn: (r) => r["_measurement"] == "{measurement}")
-    |> filter(fn: (r) => r["_field"] == "latitude")
-    |> aggregateWindow(every: {window} , fn: last)
-    |> last()
-
-    long = from(bucket: "{bucket}")
-    |> range(start: {start})
-    |> filter(fn: (r) => r["_measurement"] == "{measurement}")
-    |> filter(fn: (r) => r["_field"] == "longitude")
-    |> aggregateWindow(every: {window} , fn: last)
-    |> last()
-
-    alt = from(bucket: "{bucket}")
-    |> range(start: {start})
-    |> filter(fn: (r) => r["_measurement"] == "{measurement}")
-    |> filter(fn: (r) => r["_field"] == "altitude")
-    |> aggregateWindow(every: {window} , fn: last)
-    |> last()
-
-    union(tables: [alt, lat, long, measurement])
-    |> group(columns: ["device"], mode: "by")
-    |> pivot(rowKey: ["_time"], columnKey: ["_field"],  valueColumn: "_value")
-    |> group()
     """
-
     with get_influx_client() as client:
         query_api = client.query_api()
         results = query_api.query(query=query)
 
-        return {
-            "records": [
-                {
-                    key: record.values[key]
-                    for key in [
-                        "device",
-                        "altitude",
-                        "latitude",
-                        "longitude",
-                        fieldname,
-                    ]
-                }
+        return MapData(
+            records=[
+                Record(
+                    device=record.values["device"],
+                    soil_moisture=record.values["_value"],
+                    latitude=float(record.values["latitude"]),
+                    longitude=float(record.values["longitude"]),
+                    altitude=maybe_float(record.values.get("altitude")),
+                )
                 for result in results
                 for record in result.records
-                if record.values[fieldname] is not None
             ],
-            "timestamp": datetime.now().astimezone(ZoneInfo("Europe/Berlin")).isoformat(),
-        }
+            timestamp=datetime.now().astimezone(ZoneInfo("Europe/Berlin")),
+        )
+
+
+def maybe_float(x) -> Union[float, None]:
+    return float(x) if x is not None else None
