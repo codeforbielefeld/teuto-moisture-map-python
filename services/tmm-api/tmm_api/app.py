@@ -1,4 +1,6 @@
 # app.py
+from threading import Lock
+from cachetools import TTLCache, cached
 from fastapi import FastAPI, Form, Header, Query, Path
 from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse
 from tmm_api.common.auth import get_digest, is_auth
@@ -36,6 +38,7 @@ if write_enabled == "true":
 
 
 @app.get("/mapData", response_model=MapData)
+@cached(cache=TTLCache(maxsize=1000, ttl=600), lock=Lock())
 def map_data(days: int = 1):
     """
     This method exports the moisture data for the current day.
@@ -44,6 +47,7 @@ def map_data(days: int = 1):
 
 
 @app.get("/sensorData/{sensor}", response_model=SensorReport)
+@cached(cache=TTLCache(maxsize=1000, ttl=600), lock=Lock())
 def sensor_data(
     sensor,
     records: int = Query(7, gt=0, le=31),  # noqa: B008
