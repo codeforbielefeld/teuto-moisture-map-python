@@ -12,8 +12,8 @@ class FloatStringWithUnit(ConstrainedStr):
     regex = FLOAT_REGEX
 
 
-FloatValue = Union[FloatStringWithUnit, float]
-MaybeFloatValue = Union[FloatValue, None]
+FloatValue = Union[FloatStringWithUnit, float]  # noqa: U007
+MaybeFloatValue = Union[FloatValue, None]  # noqa: U007
 
 
 @dataclass
@@ -51,7 +51,7 @@ class RxMetadata:
 class UserLocations(BaseModel):
     latitude: float
     longitude: float
-    altitude: Union[float, None] = None
+    altitude: float | None = None
 
     class Config:
         schema_extra = {"example": {"latitude": 52.014, "longitude": 8.526, "altitude": 62.1}}
@@ -105,5 +105,5 @@ def parse_float_value(x: FloatValue) -> float:
     return float(match.group())
 
 
-def parse_maybe_float_value(x: MaybeFloatValue) -> Union[float, None]:
+def parse_maybe_float_value(x: MaybeFloatValue) -> float | None:
     return parse_float_value(x) if x is not None else None

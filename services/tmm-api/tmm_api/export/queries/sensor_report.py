@@ -1,7 +1,6 @@
 import os
-from typing import Union
 
-_query: Union[str, None] = None
+_query: str | None = None
 
 
 def _get_query() -> str:

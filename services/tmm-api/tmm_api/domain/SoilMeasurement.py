@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Union
 
 from influxdb_client import Point
 from tmm_api.common.influx import get_influx_client
@@ -11,12 +10,12 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 @dataclass
 class SoilMeasurement:
     soil_moisture: float
-    soil_conductivity: Union[float, None]
-    soil_temperature: Union[float, None]
-    battery: Union[float, None]
+    soil_conductivity: float | None
+    soil_temperature: float | None
+    battery: float | None
     latitude: float
     longitude: float
-    altitude: Union[float, None]
+    altitude: float | None
     device: str
     device_brand: str
     device_model: str

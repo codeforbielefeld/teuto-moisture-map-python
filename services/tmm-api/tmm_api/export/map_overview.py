@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Union
 from zoneinfo import ZoneInfo
 
 from tmm_api.common.influx import get_influx_client
@@ -15,7 +14,7 @@ bucket = get_secret("TMM_BUCKET")
 @dataclass
 class Record:
     device: str
-    altitude: Union[float, None]
+    altitude: float | None
     latitude: float
     longitude: float
     soil_moisture: float
@@ -59,5 +58,5 @@ def export_moisture_map_data(days: int = 1) -> MapData:
         )
 
 
-def maybe_float(x) -> Union[float, None]:
+def maybe_float(x) -> float | None:
     return float(x) if x is not None else None

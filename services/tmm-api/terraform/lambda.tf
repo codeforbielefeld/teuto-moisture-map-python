@@ -4,7 +4,7 @@ resource "aws_lambda_function" "api_lambda_function" {
   function_name = local.lambda_function_name
   role          = aws_iam_role.api_lambda_function_role.arn
   handler       = local.lambda_function_handler
-  runtime       = "python3.9"
+  runtime       = "python3.10"
 
   source_code_hash = filebase64sha256(local.lambda_function_package)
 
