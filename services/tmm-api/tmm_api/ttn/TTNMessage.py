@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import re
 from typing import Union
 from pydantic import BaseModel, ConstrainedStr
-from tmm_api.ttn.SoilMeasurement import SoilMeasurement
+from tmm_api.domain.SoilMeasurement import SoilMeasurement
 
 FLOAT_REGEX = re.compile(r"^-?\d+[.]*\d*")
 

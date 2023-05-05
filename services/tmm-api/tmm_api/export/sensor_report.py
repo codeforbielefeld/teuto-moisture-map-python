@@ -41,7 +41,7 @@ class ReportResolution(str, Enum):
 
 
 def _convert_measurements(x) -> list[MoistureMeasurement]:
-    return [MoistureMeasurement(moisture=m["moisture"], time=m["time"]) for m in x] if x is not None else []
+    return [MoistureMeasurement(moisture=m["soil"], time=m["time"]) for m in x] if x is not None else []
 
 
 def sensor_report(sensor: str, records: int = 7, resolution: ReportResolution = ReportResolution.DAILY) -> SensorReport:

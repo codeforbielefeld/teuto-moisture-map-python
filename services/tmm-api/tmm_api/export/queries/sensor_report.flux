@@ -10,7 +10,7 @@ stop = date.add(d: windowSize, to: t0)
 // Daily average by sensor, still windowed
 daily_average_by_sensor = from(bucket: _bucket)
   |> range(start: start, stop: stop)
-  |> filter(fn: (r) => r._measurement == "moisture" and r._field == "percent")
+  |> filter(fn: (r) => r._measurement == "soil" and r._field == "soil_moisture")
   |> drop(columns: ["device_brand", "device_model", "_field"])
   |> window(every: windowSize, createEmpty: false)
   |> mean()

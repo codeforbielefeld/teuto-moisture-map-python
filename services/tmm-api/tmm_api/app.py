@@ -1,19 +1,19 @@
 # app.py
-from fastapi import FastAPI, Form, Header, Query, Response, Path
-from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi import FastAPI, Form, Header, Query, Path
+from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse
 from tmm_api.common.auth import get_digest, is_auth
 from tmm_api.export.sensor_report import ReportResolution, SensorReport, sensor_report
-from tmm_api.ttn.SoilMeasurement import SoilMeasurement
+from tmm_api.domain.SoilMeasurement import SoilMeasurement
 from tmm_api.ttn.TTNMessage import TTNMessage
 from .common.influx import get_influx_client
 import os
 
 from .export.map_overview import MapData, export_moisture_map_data
 
-from tmm_api import ttn
+from tmm_api.ttn.test_data import write_test_data
 
 
-app = FastAPI()
+app = FastAPI(title="BodenfeuchteAPI")
 
 # =====================
 # Webhook web interface
@@ -21,11 +21,10 @@ app = FastAPI()
 write_enabled = os.environ.get("ENABLE_WRITE")
 if write_enabled == "true":
 
-    @app.post("/measurement/ttn", status_code=201, response_model=SoilMeasurement)
-    def ttn_dragino(message: TTNMessage, response: Response, TMM_APIKEY: str = Header()):  # noqa: B008,N803
+    @app.post("/measurement/ttn", status_code=201, response_model=SoilMeasurement, responses={401: {}})
+    def ttn_dragino(message: TTNMessage, TMM_APIKEY: str = Header()):  # noqa: B008,N803
         if not is_auth(message.end_device_ids.device_id, TMM_APIKEY):
-            response.status_code = 415
-            return {"error": "Unauthorized"}
+            return JSONResponse(status_code=401, content={"error": "Unauthorized"})
         measurement = message.to_measurement()
         measurement.write_to_influx()
         return measurement
@@ -77,7 +76,7 @@ if development_mode == "true":
         """
         This method writes test data into the influx database for test purposes
         """
-        ttn.write_test_data(devices, days, measurements)
+        write_test_data(devices, days, measurements)
         return "Success"
 
     @app.get("/insertTestData", response_class=HTMLResponse)
