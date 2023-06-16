@@ -65,12 +65,9 @@ jobs:
           cache: "poetry"
       - run: poetry config virtualenvs.prefer-active-python true
       - run: make build
-      - run: |
-          cd terraform
-          terraform init
-          cd ..        
+      - run: make init      
       - run: make plan
-      #- run: make deploy
+      - run: make deploy
       
           
       

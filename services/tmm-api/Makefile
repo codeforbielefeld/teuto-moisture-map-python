@@ -23,6 +23,9 @@ deploy: terraform/tfplan
 	cd terraform && \
 	terraform apply tfplan
 
+init:
+	cd terraform && \
+	terraform init
 
 clean:
 	rm -rf dist terraform/tfplan terraform/lambda_package.zip
