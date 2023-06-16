@@ -1,0 +1,68 @@
+name: tmm-api
+
+on:
+  push:
+    paths:
+      - "services/tmm-api/**"
+      - ".github/workflows/tmm-api-aws-dev.yml"      
+
+env:
+  REGISTRY: ghcr.io
+  REPOSITORY: ${{ github.repository }}
+  STACK_NAME: tmm-api
+
+jobs:
+  checks:
+    defaults:
+      run:
+        working-directory: "services/tmm-api"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "poetry"
+      - run: poetry config virtualenvs.prefer-active-python true
+      - run: poetry install
+      - name: Tests
+        run: poetry run pytest
+      - name: Typing - mypy
+        run: poetry run mypy .
+      - name: Lint - ruff
+        run: poetry run ruff .
+      - name: Lint - black
+        run: poetry run black --check .
+
+  deploy-dev:
+    runs-on: ubuntu-latest
+    environment: aws_dev
+    env:
+      TF_VAR_influx_url : ${{ secrets.TF_VAR_influx_url }}
+      TF_VAR_influx_org : ${{ secrets.TF_VAR_influx_org }}
+      TF_VAR_influx_token : ${{ secrets.TF_VAR_influx_token }}
+      TF_VAR_influx_bucket : ${{ secrets.TF_VAR_influx_bucket }}
+      TF_VAR_tmm_enable_write : ${{ secrets.TF_VAR_tmm_enable_write }}
+      TF_VAR_tmm_auth_secret : ${{ secrets.TF_VAR_tmm_auth_secret }}
+    needs:
+      - checks
+    defaults:
+      run:
+        working-directory: "services/tmm-api"
+    steps:      
+      - uses: actions/checkout@v3        
+      - uses: hashicorp/setup-terraform@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.DEPLOY_ROLE }} 
+          aws-region: eu-central-1
+      - run: make build
+      - run: make plan
+      - run: make deploy
+      
+          
+      

@@ -39,3 +39,15 @@ variable "influx_bucket" {
   sensitive = true
 }
 
+variable "tmm_enable_write" {
+  description = "Whether or not to enable write access in the api"
+  type = bool
+  sensitive = true
+}
+
+variable "tmm_auth_secret" {
+  description = "The auth secret used to validate api keys"
+  type = string
+  sensitive = true
+}
+

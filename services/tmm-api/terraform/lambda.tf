@@ -21,6 +21,8 @@ resource "aws_lambda_function" "api_lambda_function" {
       INFLUXDB_V2_ORG   = var.influx_org
       INFLUXDB_V2_TOKEN = var.influx_token
       TMM_BUCKET        = var.influx_bucket
+      ENABLE_WRITE      = var.tmm_enable_write
+      TMM_AUTH_SECRET   = var.tmm_auth_secret
     }
   }
 }
