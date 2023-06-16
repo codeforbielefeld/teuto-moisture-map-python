@@ -1,4 +1,4 @@
-name: tmm-api
+name: tmm-api-depoly-aws
 
 on:
   push:
@@ -6,10 +6,8 @@ on:
       - "services/tmm-api/**"
       - ".github/workflows/tmm-api-aws-dev.yml"      
 
-env:
-  REGISTRY: ghcr.io
-  REPOSITORY: ${{ github.repository }}
-  STACK_NAME: tmm-api
+permissions:
+  id-token: write
 
 jobs:
   checks:
