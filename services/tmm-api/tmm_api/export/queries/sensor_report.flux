@@ -8,26 +8,26 @@ start = date.sub(d: duration(v: int(v: windowSize) * (int(v: _records) - 1)), fr
 stop = date.add(d: windowSize, to: t0)
 
 // Daily average by sensor, still windowed
-daily_average_by_sensor = from(bucket: _bucket)
-  |> range(start: start, stop: stop)
-  |> filter(fn: (r) => r._measurement == "soil" and r._field == "soil_moisture")
-  |> drop(columns: ["device_brand", "device_model", "_field"])
-  |> window(every: windowSize, createEmpty: false)
-  |> mean()
-  |> duplicate(column: "_start", as: "_time")
+daily_average_by_sensor =
+    from(bucket: _bucket)
+        |> range(start: start, stop: stop)
+        |> filter(fn: (r) => r._measurement == "soil" and r._field == "soil_moisture")
+        |> drop(columns: ["device_brand", "device_model", "_field"])
+        |> window(every: windowSize, createEmpty: false)
+        |> mean()
+        |> duplicate(column: "_start", as: "_time")
 
 // Result for the selected sensor
 daily_average_by_sensor
-  |> filter(fn: (r) => r["device"] == _device)
-  |> drop(columns: ["device"])
-  |> window(every: inf)
-  |> drop(columns: ["_start", "_stop"])
-  |> yield(name: "sensor")
+    |> filter(fn: (r) => r["device"] == _device)
+    |> group(columns: ["_time", "_measurement"])
+    |> mean()
+    |> group()
+    |> yield(name: "sensor")
 
 // Result for all sensors
 daily_average_by_sensor
-  |> drop(columns: ["device"])
-  |> mean()
-  |> duplicate(column: "_start", as: "_time")
-  |> drop(columns: ["_start", "_stop"])
-  |> yield(name: "peers")
+    |> group(columns: ["_time", "_measurement"])
+    |> mean()
+    |> group()
+    |> yield(name: "peers")
