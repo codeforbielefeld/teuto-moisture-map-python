@@ -9,8 +9,19 @@ dist/lambda_package.zip: pyproject.toml poetry.lock $(shell find tmm_api)
 	cd dist/lambda_package && \
 	zip -r ../lambda_package.zip . -x '*.pyc'	
 
+plan-lambda: terraform/tfplan-lambda
 
-plan: terraform/tfplan
+terraform/tfplan-lambda: dist/lambda_package.zip terraform/*.tf
+	cp -a dist/lambda_package.zip terraform
+	
+	cd terraform && \
+	terraform plan --target aws_lambda_function.api_lambda_function -out tfplan-lambda
+
+deploy-lambda: terraform/tfplan-lambda
+	cd terraform && \
+	terraform apply tfplan-lambda
+
+plan-all: terraform/tfplan
 
 terraform/tfplan: dist/lambda_package.zip terraform/*.tf
 	cp -a dist/lambda_package.zip terraform
@@ -19,7 +30,7 @@ terraform/tfplan: dist/lambda_package.zip terraform/*.tf
 	terraform plan -out tfplan
 
 
-deploy: terraform/tfplan
+deploy-all: terraform/tfplan
 	cd terraform && \
 	terraform apply tfplan
 

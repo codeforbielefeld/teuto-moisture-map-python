@@ -65,9 +65,9 @@ jobs:
           cache: "poetry"
       - run: poetry config virtualenvs.prefer-active-python true
       - run: make build
-      - run: make init      
-      - run: make plan
-      - run: make deploy
+      - run: make init
+      - run: make plan-lambda
+      - run: make deploy-lambda
       
           
       
