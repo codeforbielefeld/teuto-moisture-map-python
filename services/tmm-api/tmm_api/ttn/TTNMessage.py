@@ -45,7 +45,7 @@ class DecodedPayload(BaseModel):
 
 @dataclass
 class RxMetadata:
-    time: datetime
+    time: datetime | None = None
 
 
 class UserLocations(BaseModel):
@@ -92,7 +92,7 @@ class TTNMessage(BaseModel):
                 datetime.now(timezone.utc),
                 self.received_at,
                 self.uplink_message.received_at,
-                *[x.time for x in self.uplink_message.rx_metadata],
+                *[x.time for x in self.uplink_message.rx_metadata if x.time is not None],
             ),
         )
 
