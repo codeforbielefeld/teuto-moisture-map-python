@@ -65,7 +65,7 @@ class Locations:
 @dataclass
 class UplinkMessage:
     decoded_payload: DecodedPayload
-    rx_metadata: list[RxMetadata]
+    rx_metadata: list[RxMetadata | None]
     locations: Locations
     received_at: datetime
     version_ids: VersionIds
@@ -92,7 +92,7 @@ class TTNMessage(BaseModel):
                 datetime.now(timezone.utc),
                 self.received_at,
                 self.uplink_message.received_at,
-                *[x.time for x in self.uplink_message.rx_metadata if x.time is not None],
+                *[x.time for x in self.uplink_message.rx_metadata if x is not None and x.time is not None],
             ),
         )
 
