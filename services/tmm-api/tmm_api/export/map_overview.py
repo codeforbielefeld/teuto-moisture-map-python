@@ -24,6 +24,7 @@ class Record:
     avg_soil_conductivity: float | None
     avg_soil_temperature: float | None
     battery: float | None
+    avg_battery: float | None
     last_update: datetime
 
 
@@ -65,7 +66,7 @@ def export_moisture_map_data(days: int = 1) -> MapData:
             left: average,
             right: latest,
             on: (l, r) => l.device == r.device,
-            as: (l, r) => ({{r with last_update: r._time, avg_soil_moisture: l.soil_moisture, avg_soil_temperature: l.soil_temperature, avg_soil_conductivity: l.soil_conductivity}}),
+            as: (l, r) => ({{r with last_update: r._time, avg_soil_moisture: l.soil_moisture, avg_soil_temperature: l.soil_temperature, avg_soil_conductivity: l.soil_conductivity, avg_battery: l.battery}}),
         ) |> drop(columns: ["_time"])
                 
         joined |> yield(name: "joined")
@@ -85,6 +86,7 @@ def export_moisture_map_data(days: int = 1) -> MapData:
                     soil_conductivity=record.values.get("soil_conductivity"),
                     soil_temperature=record.values.get("soil_temperature"),
                     battery=record.values.get("battery"),
+                    avg_battery=record.values.get("avg_battery"),
                     avg_soil_moisture=record.values["avg_soil_moisture"],
                     avg_soil_conductivity=record.values.get("avg_soil_conductivity"),
                     avg_soil_temperature=record.values.get("avg_soil_temperature"),
