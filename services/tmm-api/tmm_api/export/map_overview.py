@@ -43,9 +43,8 @@ def export_moisture_map_data(days: int = 1) -> MapData:
         |> filter(fn: (r) => r["_measurement"] == "{measurement}")
         |> aggregateWindow(every: inf , fn: mean)
         |> last()
-        |> map(fn: (r) => ({{r with _field: "avg_" + r._field}}))
         |> pivot(rowKey: ["device"], columnKey: ["_field"], valueColumn: "_value")
-        |> filter(fn: (r) => exists r.device and exists r.latitude and exists r.longitude and exists r.avg_soil_moisture)
+        |> filter(fn: (r) => exists r.device and exists r.latitude and exists r.longitude and exists r.soil_moisture)
         |> drop(columns: ["_measurement","_time", "device_brand", "device_model"])
         |> group(columns: ["device"])
 
@@ -57,6 +56,7 @@ def export_moisture_map_data(days: int = 1) -> MapData:
         |> last()
         |> pivot(rowKey: ["device","_time"], columnKey: ["_field"], valueColumn: "_value")
         |> filter(fn: (r) => exists r.device and exists r.latitude and exists r.longitude and exists r.soil_moisture)
+        |> drop(columns: ["_measurement", "device_brand", "device_model"])
         |> group(columns: ["device"])
 
         //latest |> yield(name: "latest")
@@ -65,9 +65,9 @@ def export_moisture_map_data(days: int = 1) -> MapData:
             left: average,
             right: latest,
             on: (l, r) => l.device == r.device,
-            as: (l, r) => ({{l with last_update: r._time, soil_moisture: r.soil_moisture, soil_temperature: r.soil_temperature, soil_conductivity: r.soil_conductivity}}),
-        )
-        
+            as: (l, r) => ({{r with last_update: r._time, avg_soil_moisture: l.soil_moisture, avg_soil_temperature: l.soil_temperature, avg_soil_conductivity: l.soil_conductivity}}),
+        ) |> drop(columns: ["_time"])
+                
         joined |> yield(name: "joined")
     """
     with get_influx_client() as client:
