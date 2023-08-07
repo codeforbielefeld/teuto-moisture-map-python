@@ -57,7 +57,7 @@ if write_enabled == "true":
 # ============
 
 
-@app.get("/mapData", response_model=MapData)
+@app.get("/mapData", response_model=MapData, response_model_exclude_none=True)
 @cached(cache=TTLCache(maxsize=1000, ttl=600), lock=Lock())
 def map_data(days: int = 1):
     """
