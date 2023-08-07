@@ -20,6 +20,9 @@ class Record:
     soil_moisture: float
     soil_conductivity: float | None
     soil_temperature: float | None
+    avg_soil_moisture: float
+    avg_soil_conductivity: float | None
+    avg_soil_temperature: float | None
     battery: float | None
     last_update: datetime
 
@@ -35,35 +38,37 @@ def export_moisture_map_data(days: int = 1) -> MapData:
 
     query = f"""
     import "join"
-    data = from(bucket: "{bucket}")
+    average = from(bucket: "{bucket}")
         |> range(start: {start})
         |> filter(fn: (r) => r["_measurement"] == "{measurement}")
-        |> filter(fn: (r) => exists r.device and exists r.latitude and exists r.longitude)
         |> aggregateWindow(every: inf , fn: mean)
         |> last()
-        |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+        |> map(fn: (r) => ({{r with _field: "avg_" + r._field}}))
+        |> pivot(rowKey: ["device"], columnKey: ["_field"], valueColumn: "_value")
+        |> filter(fn: (r) => exists r.device and exists r.latitude and exists r.longitude and exists r.avg_soil_moisture)
+        |> drop(columns: ["_measurement","_time", "device_brand", "device_model"])
+        |> group(columns: ["device"])
+
+        //average |> yield (name: "average")
+
+        latest = from(bucket: "tmm-bucket")
+        |> range(start: {start})
+        |> filter(fn: (r) => r["_measurement"] == "{measurement}")
+        |> last()
+        |> pivot(rowKey: ["device","_time"], columnKey: ["_field"], valueColumn: "_value")
         |> filter(fn: (r) => exists r.device and exists r.latitude and exists r.longitude and exists r.soil_moisture)
         |> group(columns: ["device"])
 
-    //data |> yield (name: "data")
-
-    times = from(bucket: "{bucket}")
-        |> range(start: {start})
-        |> filter(fn: (r) => r["_measurement"] == "{measurement}")    
-        |> group(columns: ["device"])
-        |> last()
-        |> keep(columns: ["_time", "device"])
-
-    //times |> yield (name: "times")
-    
-    joined = join.inner(
-        left: data,
-        right: times,
-        on: (l, r) => l.device == r.device,
-        as: (l, r) => ({{l with last_update: r._time}}),
-    )
-    
-    joined |> yield(name: "joined")
+        //latest |> yield(name: "latest")
+        
+        joined = join.inner(
+            left: average,
+            right: latest,
+            on: (l, r) => l.device == r.device,
+            as: (l, r) => ({{l with last_update: r._time, soil_moisture: r.soil_moisture, soil_temperature: r.soil_temperature, soil_conductivity: r.soil_conductivity}}),
+        )
+        
+        joined |> yield(name: "joined")
     """
     with get_influx_client() as client:
         query_api = client.query_api()
@@ -73,13 +78,16 @@ def export_moisture_map_data(days: int = 1) -> MapData:
             records=[
                 Record(
                     device=record.values["device"],
-                    soil_moisture=record.values["soil_moisture"],
                     latitude=float(record.values["latitude"]),
                     longitude=float(record.values["longitude"]),
                     altitude=maybe_float(record.values.get("altitude")),
+                    soil_moisture=record.values["soil_moisture"],
                     soil_conductivity=record.values.get("soil_conductivity"),
                     soil_temperature=record.values.get("soil_temperature"),
                     battery=record.values.get("battery"),
+                    avg_soil_moisture=record.values["avg_soil_moisture"],
+                    avg_soil_conductivity=record.values.get("avg_soil_conductivity"),
+                    avg_soil_temperature=record.values.get("avg_soil_temperature"),
                     last_update=record.values["last_update"],
                 )
                 for result in results
