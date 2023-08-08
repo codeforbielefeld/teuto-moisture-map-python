@@ -47,7 +47,7 @@ class App:
     def precipitation(self, recent: Boolean = True):
         if recent:
             for i in range(24):
-                hour = datetime(2022, 7, 20, i, 0, 0)
+                hour = datetime(2023, 7, 20, i, 0, 0)
                 print(
                     f"Precipitation recent {hour.strftime('%d.%m.%Y %H:%M')} : {get_precipitation(hour, [7.6282,8],[51.9616,52])}"
                 )

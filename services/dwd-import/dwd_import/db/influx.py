@@ -17,13 +17,12 @@ class InfluxDB(DeviceDB, MoistureDB):
 
     def get_devices(self) -> list[Device]:
         query = f"""from(bucket: "{self.bucket}")
-        |> range(start: -7d)
-        |> filter(fn: (r) => r["_measurement"] == "moisture")
-        |> filter(fn: (r) => r["_field"] == "latitude" or r["_field"] == "longitude")
-        |> group(columns: ["device","_field"])
-        |> last()
-        |> pivot(columnKey: ["_field"], rowKey:["_start", "_stop", "_time","device"], valueColumn: "_value"  )
-        |> group()
+            |> range(start: -7d)
+            |> filter(fn: (r) => r["_measurement"] == "soil")        
+            |> group(columns: ["device"])
+            |> last()        
+            |> keep(columns: ["device", "latitude", "longitude"])
+            |> group()
         """
 
         with self.get_influx_client() as client:
@@ -32,8 +31,8 @@ class InfluxDB(DeviceDB, MoistureDB):
             return [
                 Device(
                     record.values["device"],
-                    record.values["longitude"],
-                    record.values["latitude"],
+                    float(record.values["longitude"]),
+                    float(record.values["latitude"]),
                 )
                 for record in result[0].records
             ]

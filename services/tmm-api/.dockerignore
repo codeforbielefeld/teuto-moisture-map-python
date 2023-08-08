@@ -1,0 +1,8 @@
+influx_config.ini*
+dist/
+*scratch*
+terraform/
+__pycache__
+.nox
+.mypy_cache
+.pytest_cache

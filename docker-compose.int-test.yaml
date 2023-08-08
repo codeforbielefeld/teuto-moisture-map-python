@@ -11,16 +11,16 @@ services:
     environment:
       INFLUX_CONFIG_FILE: /run/secrets/influx_config      
       TMM_BUCKET_FILE: /run/secrets/tmm_bucket
+      TMM_API_KEY_FILE: /run/secrets/tmm_api_key
     secrets:
       - influx_config
       - tmm_bucket
+      - tmm_api_key
     ports:
       - "5000:5000"
 
   influx:
-    image: influxdb:2.2.0-alpine
-    ports:
-      - "8086:8086"
+    image: influxdb:latest
     env_file:
       - ./examples/influx_docker.env
 
@@ -29,3 +29,5 @@ secrets:
     file: ./examples/influx_config.ini
   tmm_bucket:
     file: ./examples/tmm_bucket
+  tmm_api_key:
+    file: ./examples/tmm_api_key

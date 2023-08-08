@@ -41,6 +41,9 @@ Alternatively use buildpacks to build the docker image `pack build tmm-api --bui
 
 ## Local development
 
-Start a local influx instance using the top level docker compose setup using `docker compose up -d influx`.
+Create a `influx_config.ini` containing the configuration for the influx database you wish to use.  
 
-Start the development server using `nox -s serv`.
+You may use the provided `influx_config.ini.template` file which works with the top level docker compose config.
+In that case start the local influx instance from the root directory using `docker compose up -d influx`.
+
+Afterwards start the development server using `nox -s serv`.
