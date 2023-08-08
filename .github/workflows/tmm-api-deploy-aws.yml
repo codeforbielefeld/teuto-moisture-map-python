@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - "services/tmm-api/**"
-      - ".github/workflows/tmm-api-aws-dev.yml"
+      - ".github/workflows/tmm-api-deploy-aws.yml"
 
 permissions:
   id-token: write
