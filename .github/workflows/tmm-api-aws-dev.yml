@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - "services/tmm-api/**"
-      - ".github/workflows/tmm-api-aws-dev.yml"      
+      - ".github/workflows/tmm-api-aws-dev.yml"
 
 permissions:
   id-token: write
@@ -36,6 +36,7 @@ jobs:
         run: poetry run black --check .
 
   deploy-dev:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: aws_dev
     env:
