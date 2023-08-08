@@ -5,10 +5,6 @@ on:
     paths:
       - "services/tmm-api/**"
       - ".github/workflows/tmm-api-deploy-aws.yml"
-  pull_request:
-    paths:
-      - "services/tmm-api/**"
-      - ".github/workflows/tmm-api-deploy-aws.yml"
 
 permissions:
   id-token: write
