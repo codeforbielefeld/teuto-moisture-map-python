@@ -1,0 +1,75 @@
+name: tmm-api-docker
+
+on:
+  push:
+    paths:
+      - "services/tmm-api/**"
+      - "docker-compose.*.yaml"
+      - ".github/workflows/tmm-api-docker.yml"
+  pull_request:
+      paths:
+        - "services/tmm-api/**"
+        - "docker-compose.*.yaml"
+        - ".github/workflows/tmm-api-docker.yml"
+env:
+  REGISTRY: ghcr.io
+  REPOSITORY: ${{ github.repository }}
+  STACK_NAME: tmm-api
+
+jobs:
+  checks:
+    defaults:
+      run:
+        working-directory: "services/tmm-api"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "poetry"
+      - run: poetry config virtualenvs.prefer-active-python true
+      - run: poetry install
+      - name: Tests
+        run: poetry run pytest
+      - name: Typing - mypy
+        run: poetry run mypy .
+      - name: Lint - ruff
+        run: poetry run ruff .
+      - name: Lint - black
+        run: poetry run black --check .
+
+  integration-test:
+    runs-on: ubuntu-latest
+    outputs:
+      TMM_API_IMAGE_NAME: ${{ steps.image-name.outputs.TMM_API_IMAGE_NAME}}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Set image name
+        id: image-name
+        run: |
+          TMM_API_IMAGE_NAME=${REGISTRY}/${REPOSITORY}/${STACK_NAME}:latest
+          echo "TMM_API_IMAGE_NAME=${TMM_API_IMAGE_NAME}" >> $GITHUB_ENV
+          echo "TMM_API_IMAGE_NAME=${TMM_API_IMAGE_NAME}" >> $GITHUB_OUTPUT
+      - uses: buildpacks/github-actions/setup-pack@v4.8.1
+      - name: Build tmm-api image using buildpacks
+        working-directory: "services/tmm-api"
+        run: pack build ${TMM_API_IMAGE_NAME} --buildpack paketo-buildpacks/python --builder gcr.io/paketo-buildpacks/builder:base
+      - name: Start service
+        run: docker-compose -f docker-compose.int.yaml up -d
+      - name: Check service is up
+        # TODO: Add some propper tests.
+        run: |
+          sleep 10
+          curl -f localhost:5000/internal/health/self
+          curl -f localhost:5000/internal/health/int
+      - name: Service Logs
+        if: failure()
+        run: docker-compose -f docker-compose.int.yaml logs
+      - name: Stop service
+        if: always()
+        run: docker-compose -f docker-compose.int.yaml down
