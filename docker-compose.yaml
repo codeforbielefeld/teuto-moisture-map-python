@@ -4,6 +4,7 @@
 
 version: "3.9"
 services:
+
   tmm-api:
     build: services/tmm-api
     #image: tmm-api
@@ -14,6 +15,7 @@ services:
       TMM_BUCKET_FILE: /run/secrets/tmm_bucket
       TMM_API_KEY_FILE: /run/secrets/tmm_api_key
       DEVELOPMENT_MODE: true
+      ENABLE_WRITE: true
     secrets:
       - influx_config
       - tmm_bucket
@@ -22,7 +24,7 @@ services:
       - "5000:5000"
 
   influx:
-    image: influxdb:2.5.1
+    image: influxdb:latest
     volumes:
       - influxdb-storage:/var/lib/influxdb
     ports:
@@ -50,8 +52,9 @@ services:
     env_file:
       - .dev.env
     depends_on:
-      - mongo
       - influx
+      - mongo
+
   dwd-mongo-test:
     build: services/dwd-import
     command: mongo-test 
@@ -60,6 +63,7 @@ services:
     depends_on:
       - mongo
       - influx
+
   scheduler:
     image: mcuadros/ofelia:latest
     depends_on:
@@ -71,30 +75,6 @@ services:
     #  ofelia.job-local.my-test-job.schedule: "@every 1m"
     #  ofelia.job-local.my-test-job.command: "date"
 
-  postgres:
-    image: postgres:14
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
-      PGDATA: /data/postgres
-    volumes:
-      - postgres-storage:/data/postgres
-    ports:
-      - "5432:5432"
-
-  pgadmin:
-    image: dpage/pgadmin4
-    depends_on:
-      - postgres
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    volumes:
-      - pgadmin-storage:/var/lib/pgadmin
-
-    ports:
-      - "${PGADMIN_PORT:-5050}:80"
   mongo:
     image: mongo
     restart: always    
@@ -103,20 +83,8 @@ services:
     volumes:
       - mongodb-storage:/data/db
 
-  mongo-express:
-    image: mongo-express
-    restart: always
-    ports:
-      - 8081:8081
-    env_file:
-      - .dev.env
-    depends_on:
-      - mongo
-
 volumes:
   influxdb-storage: {}
-  postgres-storage: {}
-  pgadmin-storage: {}
   mongodb-storage: {}
 
 secrets:
