@@ -6,11 +6,6 @@ on:
       - "services/tmm-api/**"
       - "docker-compose.*.yaml"
       - ".github/workflows/tmm-api-docker.yml"
-  pull_request:
-      paths:
-        - "services/tmm-api/**"
-        - "docker-compose.*.yaml"
-        - ".github/workflows/tmm-api-docker.yml"
 env:
   REGISTRY: ghcr.io
   REPOSITORY: ${{ github.repository }}
