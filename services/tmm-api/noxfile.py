@@ -47,7 +47,7 @@ def serv(session):
             "DEVELOPMENT_MODE": "true",
             "ENABLE_WRITE": "true",
             "TMM_AUTH_SECRET": "secret",
-            "INFLUX_CONFIG_FILE": "influx_config.local.ini",
+            "INFLUX_CONFIG_FILE": "influx_config.ini",
             "TMM_BUCKET": "tmm-bucket",
         },
     )
