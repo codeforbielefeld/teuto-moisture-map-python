@@ -1,36 +1,29 @@
+LAMBDA_NAME ?= tmm_api_lambda
+
 build: dist/lambda_package.zip
 
 dist/lambda_package.zip: pyproject.toml poetry.lock $(shell find tmm_api)
 
 	poetry build
 
+	rm -rf dist
+
 	poetry run pip install -t dist/lambda_package dist/*.whl 
 
 	cd dist/lambda_package && \
 	zip -r ../lambda_package.zip . -x '*.pyc'	
 
-plan-lambda: terraform/tfplan-lambda
+deploy-lambda: dist/lambda_package.zip
+	aws lambda update-function-code --function-name $(LAMBDA_NAME) \
+		--zip-file fileb://dist/lambda_package.zip > /dev/null
 
-terraform/tfplan-lambda: dist/lambda_package.zip terraform/*.tf
-	cp -a dist/lambda_package.zip terraform
-	
-	cd terraform && \
-	terraform plan --target aws_lambda_function.api_lambda_function -out tfplan-lambda
+plan: terraform/tfplan
 
-deploy-lambda: terraform/tfplan-lambda
-	cd terraform && \
-	terraform apply tfplan-lambda
-
-plan-all: terraform/tfplan
-
-terraform/tfplan: dist/lambda_package.zip terraform/*.tf
-	cp -a dist/lambda_package.zip terraform
-	
+terraform/tfplan: terraform/*.tf terraform/*.tfvars terraform/.terraform.lock.hcl
 	cd terraform && \
 	terraform plan -out tfplan
 
-
-deploy-all: terraform/tfplan
+deploy-infrastructure: terraform/tfplan
 	cd terraform && \
 	terraform apply tfplan
 
@@ -39,4 +32,4 @@ init:
 	terraform init
 
 clean:
-	rm -rf dist terraform/tfplan terraform/lambda_package.zip
+	rm -rf dist terraform/tfplan
