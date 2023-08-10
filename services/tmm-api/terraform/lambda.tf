@@ -1,12 +1,22 @@
+
+data "archive_file" "initial_dummy_code" {
+  type = "zip"
+  output_path = "${path.module}/dummy_lambda_function_package.zip"
+  source {
+    content = "dummy"
+    filename = "dummy.txt"
+  }
+}
+
 resource "aws_lambda_function" "api_lambda_function" {
 
-  filename      = local.lambda_function_package
+  filename      = data.archive_file.initial_dummy_code.output_path
   function_name = local.lambda_function_name
   role          = aws_iam_role.api_lambda_function_role.arn
   handler       = local.lambda_function_handler
   runtime       = "python3.10"
 
-  source_code_hash = filebase64sha256(local.lambda_function_package)
+  source_code_hash = data.archive_file.initial_dummy_code.output_sha256
 
   # we can check the memory usage in the lambda dashboard, sklearn is a bit memory hungry..
   # memory_size = 256
@@ -14,6 +24,10 @@ resource "aws_lambda_function" "api_lambda_function" {
   # Uncomment the next line if you have an M1 processor
   # architectures = [ "arm64" ] 
   depends_on = [aws_cloudwatch_log_group.lambda_log]
+
+  lifecycle {
+    ignore_changes = [ filename, source_code_hash ]
+  }
 
   environment {
     variables = {
