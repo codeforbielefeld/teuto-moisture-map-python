@@ -13,6 +13,7 @@ uvicorn = "^0.19.0"
 python-multipart = "^0.0.5"
 mangum = "^0.17.0"
 cachetools = "^5.3.0"
+boto3 = "^1.28.25"
 
 [tool.poetry.dev-dependencies]
 black = "^22.10.0"
@@ -20,6 +21,10 @@ mypy = "^0.982"
 ruff = "^0.0.128"
 pytest = "^7.1.2"
 watchfiles = "^0.18.1"
+
+[tool.poetry.group.dev.dependencies]
+nox = "^2023.4.22"
+boto3-stubs = "^1.28.25"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
