@@ -36,7 +36,7 @@ jobs:
         run: poetry run black --check .
 
   deploy-dev:
-#    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: aws_dev
     needs:
@@ -44,13 +44,12 @@ jobs:
     defaults:
       run:
         working-directory: "services/tmm-api"
-    steps:      
+    steps:
       - uses: actions/checkout@v3        
-      - uses: hashicorp/setup-terraform@v2
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ secrets.LAMBDA_DEPLOY_ROLE }} 
+          role-to-assume: ${{ secrets.LAMBDA_DEPLOY_ROLE }}
           aws-region: eu-central-1
       - run: pipx install poetry
       - uses: actions/setup-python@v4
@@ -61,5 +60,27 @@ jobs:
       - run: make build
       - run: ENV=dev make deploy-lambda
       
-          
-      
+  deploy-prod:
+    if: github.ref == 'refs/heads/prod'
+    runs-on: ubuntu-latest
+    environment: aws_prod
+    needs:
+      - checks
+    defaults:
+      run:
+        working-directory: "services/tmm-api"
+    steps:
+      - uses: actions/checkout@v3        
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.LAMBDA_DEPLOY_ROLE }}
+          aws-region: eu-central-1
+      - run: pipx install poetry
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "poetry"
+      - run: poetry config virtualenvs.prefer-active-python true
+      - run: make build
+      - run: ENV=prod make deploy-lambda
