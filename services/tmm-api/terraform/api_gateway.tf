@@ -1,6 +1,6 @@
 
 resource "aws_apigatewayv2_api" "api_gw" {
-  name          = local.api_gw_name
+  name          = "${local.prefix}_gw"
   protocol_type = "HTTP"
   description   = "Api Gateway for the tmm api"
 

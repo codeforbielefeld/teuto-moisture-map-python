@@ -36,7 +36,7 @@ jobs:
         run: poetry run black --check .
 
   deploy-dev:
-    if: github.ref == 'refs/heads/main'
+#    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: aws_dev
     needs:
@@ -50,7 +50,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ secrets.DEPLOY_ROLE }} 
+          role-to-assume: ${{ secrets.LAMBDA_DEPLOY_ROLE }} 
           aws-region: eu-central-1
       - run: pipx install poetry
       - uses: actions/setup-python@v4
@@ -59,7 +59,7 @@ jobs:
           cache: "poetry"
       - run: poetry config virtualenvs.prefer-active-python true
       - run: make build
-      - run: make deploy-lambda
+      - run: ENV=dev make deploy-lambda
       
           
       
