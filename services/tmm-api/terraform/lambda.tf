@@ -40,12 +40,12 @@ resource "aws_lambda_function" "api_lambda_function" {
 
   environment {
     variables = {
-      ENABLE_WRITE         = var.tmm_enable_write
-      INFLUXDB_V2_URL_ID   = aws_secretsmanager_secret.lambda_secret["INFLUXDB_V2_URL"].id
-      INFLUXDB_V2_ORG_ID   = aws_secretsmanager_secret.lambda_secret["INFLUXDB_V2_ORG"].id
-      INFLUXDB_V2_TOKEN_ID = aws_secretsmanager_secret.lambda_secret["INFLUXDB_V2_TOKEN"].id
-      TMM_BUCKET_ID        = aws_secretsmanager_secret.lambda_secret["TMM_BUCKET"].id
-      TMM_AUTH_SECRET_ID   = aws_secretsmanager_secret.lambda_secret["TMM_AUTH_SECRET"].id
+      ENABLE_WRITE      = var.tmm_enable_write
+      INFLUXDB_V2_URL   = var.influx_url
+      INFLUXDB_V2_ORG   = var.influx_org
+      INFLUXDB_V2_TOKEN = var.influx_token
+      TMM_BUCKET        = var.influx_bucket
+      TMM_AUTH_SECRET   = var.tmm_auth_secret
     }
   }
 }
@@ -88,11 +88,6 @@ resource "aws_iam_policy" "api_lambda_function_policy" {
           "logs:PutLogEvents"
         ],
         Resource = "arn:aws:logs:*:*:*"
-      },
-      {
-        "Effect" : "Allow",
-        "Action" : "secretsmanager:GetSecretValue",
-        "Resource" : [for secret in aws_secretsmanager_secret.lambda_secret : secret.arn]
       }
     ]
   })
