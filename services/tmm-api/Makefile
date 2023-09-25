@@ -1,6 +1,9 @@
 ENV ?= dev
 LAMBDA_NAME ?= tmm_api_$(ENV)_lambda
-LAMBDA_SOURCE_BUCKET ?= tmm-api-$(ENV)-lambda-source
+LAMBDA_SOURCE_BUCKET ?= tmm-api-$(ENV)-lambda-src
+
+.PHONY: build clean deploy-lambda
+
 
 build: dist/lambda_package.zip
 
@@ -21,19 +24,5 @@ deploy-lambda: dist/lambda_package.zip
 
 	aws lambda update-function-code --function-name $(LAMBDA_NAME) --s3-bucket $(LAMBDA_SOURCE_BUCKET) --s3-key lambda_package.zip > /dev/null
 
-plan: terraform/tfplan
-
-terraform/tfplan: terraform/*.tf terraform/*.tfvars terraform/.terraform.lock.hcl
-	cd terraform && \
-	terraform plan -out tfplan
-
-deploy-infrastructure: terraform/tfplan
-	cd terraform && \
-	terraform apply tfplan
-
-init:
-	cd terraform && \
-	terraform init
-
 clean:
-	rm -rf dist terraform/tfplan
+	rm -rf dist
