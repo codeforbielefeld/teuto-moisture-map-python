@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "lambda_source_bucket" {
-  bucket = "${local.prefix2}-lambda-source"
+  bucket = "${local.prefix2}-lambda-src"
 }
 
 data "archive_file" "initial_dummy_code" {
