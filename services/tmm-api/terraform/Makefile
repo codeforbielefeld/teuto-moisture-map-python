@@ -3,19 +3,19 @@ ENV ?= dev
 .PHONY: plan apply init clean 
 
 
-plan: tfplan 
+plan: $(ENV).tfplan 
 
-tfplan: *.tf *.tfvars .terraform.lock.hcl
+$(ENV).tfplan: *.tf *.tfvars .terraform.lock.hcl
 	terraform workspace select $(ENV) && \
-	terraform plan -var-file terraform.$(ENV).tfvars -out tfplan
+	terraform plan -var-file terraform.$(ENV).tfvars -out $(ENV).tfplan
 
 
-apply: tfplan
+apply: $(ENV).tfplan
 	terraform workspace select $(ENV) && \
-	terraform apply tfplan
+	terraform apply $(ENV).tfplan
 
 init:
 	terraform init
 
 clean:
-	rm -rf tfplan
+	rm -rf dev.tfplan $(ENV).tfplan
