@@ -15,6 +15,7 @@ locals {
 
   deploy_subject = "repo:codeforbielefeld/teuto-moisture-map-python:environment:aws_${var.env}"
 
+  sensors_table_name = "tmm_${var.env}_sensors"
 }
 
 variable "env" {

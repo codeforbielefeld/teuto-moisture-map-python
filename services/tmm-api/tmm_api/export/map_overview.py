@@ -4,7 +4,8 @@ from zoneinfo import ZoneInfo
 
 from tmm_api.common.influx import get_influx_client
 from tmm_api.common.secrets import get_secret
-
+from tmm_api.common.sensor_metadata import get_sensors_metadata
+import typing
 
 measurement = "soil"
 fieldname = "soil_moisture"
@@ -26,6 +27,11 @@ class Record:
     battery: float | None
     avg_battery: float | None
     last_update: datetime
+    shaded: bool | None
+    depth_cm: float | None
+    sealed_ground: bool | None
+    note: str | None
+    soil_note: str | None
 
 
 @dataclass
@@ -74,6 +80,11 @@ def export_moisture_map_data(days: int = 1) -> MapData:
     with get_influx_client() as client:
         query_api = client.query_api()
         results = query_api.query(query=query)
+        metadata = get_sensors_metadata()
+
+        def get_field(sensor_id, field) -> typing.Any:
+            sensor = metadata.get(sensor_id)
+            return sensor.get(field) if sensor else None
 
         return MapData(
             records=[
@@ -91,6 +102,11 @@ def export_moisture_map_data(days: int = 1) -> MapData:
                     avg_soil_conductivity=record.values.get("avg_soil_conductivity"),
                     avg_soil_temperature=record.values.get("avg_soil_temperature"),
                     last_update=record.values["last_update"],
+                    shaded=get_field(record.values["device"], "shaded"),
+                    depth_cm=get_field(record.values["device"], "depth_cm"),
+                    sealed_ground=get_field(record.values["device"], "sealed_ground"),
+                    note=get_field(record.values["device"], "note"),
+                    soil_note=get_field(record.values["device"], "soil_note"),
                 )
                 for result in results
                 for record in result.records

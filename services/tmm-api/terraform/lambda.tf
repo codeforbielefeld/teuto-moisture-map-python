@@ -46,6 +46,7 @@ resource "aws_lambda_function" "api_lambda_function" {
       INFLUXDB_V2_TOKEN_SSM_NAME = aws_ssm_parameter.lambda_secret["INFLUXDB_V2_TOKEN"].name
       TMM_BUCKET_SSM_NAME        = aws_ssm_parameter.lambda_secret["TMM_BUCKET"].name
       TMM_AUTH_SECRET_SSM_NAME   = aws_ssm_parameter.lambda_secret["TMM_AUTH_SECRET"].name
+      TMM_SENSORS_TABLE_NAME = aws_dynamodb_table.tmm_sensors.name
     }
   }
 }
@@ -93,6 +94,17 @@ resource "aws_iam_policy" "api_lambda_function_policy" {
         "Effect" : "Allow",
         "Action" : "ssm:GetParameter",
         "Resource" : [for secret in aws_ssm_parameter.lambda_secret : secret.arn]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "dynamodb:Scan",
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem"
+        ],
+        "Resource" : aws_dynamodb_table.tmm_sensors.arn
       }
     ]
   })
