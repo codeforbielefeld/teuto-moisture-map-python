@@ -26,26 +26,24 @@ dev = [
     "watchfiles>=0.18.1,<0.19",
 ]
 
-# [tool.setuptools]
-# py-modules = [
-#     "tmm_api",
-# ]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-# [tool.uv.build-backend]
-# module-name = "tmm_api"
-# module-root = ""
 
 [tool.ruff]
 line-length = 120
 select = [
-    "C","E","F","W","B","Q", "N","U"
+    "C",
+    "E",
+    "F",
+    "W",
+    "B",
+    "Q",
+    "N",
+    "U",
     #,"D" # todo
-    ]
-ignore = [
-    "E501",
-    ]
+]
+ignore = ["E501"]
 exclude = [
     ".git",
     "__pycache__",
@@ -55,8 +53,8 @@ exclude = [
     ".mypy_cache",
     "dist",
     ".venv",
-    "scratch"
-    ]
+    "scratch",
+]
 
 [tool.black]
 line-length = 120
