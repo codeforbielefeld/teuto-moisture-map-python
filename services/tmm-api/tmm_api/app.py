@@ -1,5 +1,5 @@
 # app.py
-from logging import StreamHandler, getLogger
+from logging import getLogger
 import logging
 from threading import Lock
 from cachetools import TTLCache, cached
