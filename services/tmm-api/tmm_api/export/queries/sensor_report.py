@@ -7,7 +7,7 @@ def _get_query() -> str:
     global _query
     if _query is None:
         query_file = os.path.join(os.path.dirname(__file__), "sensor_report.flux")
-        with open(query_file, "r") as file:
+        with open(query_file) as file:
             _query = file.read()
     return _query
 

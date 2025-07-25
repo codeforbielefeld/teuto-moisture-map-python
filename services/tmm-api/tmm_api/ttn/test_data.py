@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from random import random
-from typing import Generator
+from collections.abc import Generator
 
 from tmm_api.domain.SoilMeasurement import SoilMeasurement
 
@@ -21,9 +21,7 @@ def construct_data(device_id, lon, lat, received_at, moisture, temperature, cond
     )
 
 
-def generate_test_data(
-    num_devices: int, days: int, num_measurements: int = 24
-) -> Generator[SoilMeasurement, None, None]:
+def generate_test_data(num_devices: int, days: int, num_measurements: int = 24) -> Generator[SoilMeasurement]:
     last = datetime.now()
     for device in range(num_devices):
         lat = 52.01 + (random() - 0.5) / 2

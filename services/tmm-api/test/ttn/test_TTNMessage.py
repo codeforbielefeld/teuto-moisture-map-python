@@ -10,7 +10,9 @@ class TestTTNMessageParsing(unittest.TestCase):
     def test_parse_payload(self):
         filepath = f"{dirname(__file__)}/../dragino_ttn_payload.json"
 
-        message = TTNMessage.parse_file(filepath)
+        with open(filepath) as f:
+            json_str = f.read()
+        message = TTNMessage.model_validate_json(json_str)
         measurement = message.to_measurement()
 
         self.assertEqual(measurement.battery, 3.304, "Battery value not ok")

@@ -7,7 +7,7 @@ from tmm_api.common.aws_secrets import get_aws_ssm_parameter
 @cached(cache={})
 def get_secret(name: str) -> str | None:
     if secret_file := os.environ.get(f"{name}_FILE"):
-        return open(secret_file, "r").read().strip()
+        return open(secret_file).read().strip()
     elif ssm_param_name := os.environ.get(f"{name}_SSM_NAME"):
         return get_aws_ssm_parameter(ssm_param_name)
     else:

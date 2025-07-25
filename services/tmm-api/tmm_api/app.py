@@ -45,6 +45,7 @@ if write_enabled == "true":
         responses={401: {}},
     )
     def ttn_dragino(message: TTNMessage, TMM_APIKEY: str = Header()):  # noqa: B008,N803
+        logger.info(f"Device: {message.end_device_ids.device_id}, API_KEY: {TMM_APIKEY}")
         if not is_auth(message.end_device_ids.device_id, TMM_APIKEY):
             return JSONResponse(status_code=401, content={"error": "Unauthorized"})
         measurement = message.to_measurement()
