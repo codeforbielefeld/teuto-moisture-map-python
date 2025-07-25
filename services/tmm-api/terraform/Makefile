@@ -18,4 +18,4 @@ init:
 	terraform init
 
 clean:
-	rm -rf dev.tfplan $(ENV).tfplan
+	rm -rf dev.tfplan prod.tfplan $(ENV).tfplan

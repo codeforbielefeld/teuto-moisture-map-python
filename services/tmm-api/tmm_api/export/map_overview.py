@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from logging import getLogger
 from zoneinfo import ZoneInfo
 
 from tmm_api.common.influx import get_influx_client
@@ -10,6 +11,8 @@ import typing
 measurement = "soil"
 fieldname = "soil_moisture"
 bucket = get_secret("TMM_BUCKET")
+
+logger = getLogger(__name__)
 
 
 @dataclass
@@ -78,9 +81,12 @@ def export_moisture_map_data(days: int = 1) -> MapData:
         joined |> yield(name: "joined")
     """
     with get_influx_client() as client:
+        logger.debug("Executing query to export map data")
         query_api = client.query_api()
         results = query_api.query(query=query)
+        logger.debug(f"Retrieved results from InfluxDB")
         metadata = get_sensors_metadata()
+        logger.debug(f"Retrieved metadata for {len(metadata)} sensors")
 
         def get_field(sensor_id, field) -> typing.Any:
             sensor = metadata.get(sensor_id)

@@ -24,7 +24,8 @@ resource "aws_s3_object" "lambda_source_code" {
 
 resource "aws_lambda_function" "api_lambda_function" {
   function_name = "${local.prefix}_lambda"
-  runtime       = "python3.11"
+  runtime       = "python3.13"
+  timeout       = 10 
   role          = aws_iam_role.api_lambda_function_role.arn
 
   handler          = local.lambda_function_handler
