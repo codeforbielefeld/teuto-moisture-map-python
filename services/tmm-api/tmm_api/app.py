@@ -25,8 +25,8 @@ from tmm_api.ttn.test_data import write_test_data
 app = FastAPI(title="BodenfeuchteAPI")
 
 logger = getLogger(__name__)
-logger.setLevel(logging.INFO)
-logger.addHandler(StreamHandler())
+getLogger().setLevel(logging.INFO)
+# getLogger().addHandler(StreamHandler())
 logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p")
 
 
@@ -45,8 +45,8 @@ if write_enabled == "true":
         responses={401: {}},
     )
     def ttn_dragino(message: TTNMessage, TMM_APIKEY: str = Header()):  # noqa: B008,N803
-        logger.info(f"Device: {message.end_device_ids.device_id}, API_KEY: {TMM_APIKEY}")
         if not is_auth(message.end_device_ids.device_id, TMM_APIKEY):
+            logger.info(f"Rejected sensor data for device: {message.end_device_ids.device_id} due to invalid API key")
             return JSONResponse(status_code=401, content={"error": "Unauthorized"})
         measurement = message.to_measurement()
         measurement.write_to_influx()
@@ -61,10 +61,13 @@ if write_enabled == "true":
 @app.get("/mapData", response_model=MapData, response_model_exclude_none=True)
 @cached(cache=TTLCache(maxsize=1000, ttl=600), lock=Lock())
 def map_data(days: int = 1):
+    logger.debug(f"Exporting map data for the last {days} days")
     """
     This method exports the moisture data for the current day.
     """
-    return export_moisture_map_data(days)
+    data = export_moisture_map_data(days)
+    logger.debug(f"Exported {len(data.records)} records")
+    return data
 
 
 @app.get("/sensorData/{sensor}", response_model=SensorReport)

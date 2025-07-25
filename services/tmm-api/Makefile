@@ -13,7 +13,7 @@ dist/lambda_package.zip: pyproject.toml uv.lock $(shell find tmm_api)
 
 	uv build --wheel
 
-	uvx -p 3.11.13 pip install -t dist/lambda_package dist/*.whl 
+	uvx -p 3.13 pip install -t dist/lambda_package dist/*.whl 
 #	uv pip install -t dist/lambda_package dist/*.whl 
 
 	cd dist/lambda_package && \
