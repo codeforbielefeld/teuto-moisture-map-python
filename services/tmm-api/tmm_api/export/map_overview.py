@@ -84,7 +84,7 @@ def export_moisture_map_data(days: int = 1) -> MapData:
         logger.debug("Executing query to export map data")
         query_api = client.query_api()
         results = query_api.query(query=query)
-        logger.debug(f"Retrieved results from InfluxDB")
+        logger.debug("Retrieved results from InfluxDB")
         metadata = get_sensors_metadata()
         logger.debug(f"Retrieved metadata for {len(metadata)} sensors")
 
