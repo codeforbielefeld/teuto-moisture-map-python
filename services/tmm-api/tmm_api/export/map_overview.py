@@ -67,14 +67,14 @@ def export_moisture_map_data(days: int = 1) -> MapData:
         |> group(columns: ["device"])
 
         //latest |> yield(name: "latest")
-        
+
         joined = join.inner(
             left: average,
             right: latest,
             on: (l, r) => l.device == r.device,
             as: (l, r) => ({{r with last_update: r._time, avg_soil_moisture: l.soil_moisture, avg_soil_temperature: l.soil_temperature, avg_soil_conductivity: l.soil_conductivity, avg_battery: l.battery}}),
         ) |> drop(columns: ["_time"])
-                
+
         joined |> yield(name: "joined")
     """
     with get_influx_client() as client:

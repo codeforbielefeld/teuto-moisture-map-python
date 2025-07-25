@@ -1,15 +1,12 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 import re
-from typing import Union
-from pydantic import BaseModel, ConstrainedStr
+from typing import Annotated, Union
+from pydantic import BaseModel, ConfigDict, StringConstraints
 from tmm_api.domain.SoilMeasurement import SoilMeasurement
 
 FLOAT_REGEX = re.compile(r"^-?\d+[.]*\d*")
-
-
-class FloatStringWithUnit(ConstrainedStr):
-    regex = FLOAT_REGEX
+FloatStringWithUnit = Annotated[str, StringConstraints(pattern=FLOAT_REGEX)]
 
 
 FloatValue = Union[FloatStringWithUnit, float]  # noqa: U007
@@ -22,25 +19,27 @@ class EndDeviceIds:
 
 
 class VersionIds(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {"brand_id": "dragino", "model_id": "lse01"},
+        }
+    )
+
     brand_id: str
     model_id: str
 
-    class Config:
-        schema_extra = {
-            "example": {"brand_id": "dragino", "model_id": "lse01"},
-        }
-
 
 class DecodedPayload(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {"Bat": "3.304 V", "conduct_SOIL": "57 uS/cm", "temp_SOIL": "7.87 °C", "water_SOIL": "23.42 %"}
+        }
+    )
+
     Bat: MaybeFloatValue
     conduct_SOIL: MaybeFloatValue  # noqa: N815
     temp_SOIL: MaybeFloatValue  # noqa: N815
     water_SOIL: FloatValue  # noqa: N815
-
-    class Config:
-        schema_extra = {
-            "example": {"Bat": "3.304 V", "conduct_SOIL": "57 uS/cm", "temp_SOIL": "7.87 °C", "water_SOIL": "23.42 %"}
-        }
 
 
 @dataclass
@@ -49,12 +48,11 @@ class RxMetadata:
 
 
 class UserLocations(BaseModel):
+    model_config = ConfigDict(json_schema_extra={"example": {"latitude": 52.014, "longitude": 8.526, "altitude": 62.1}})
+
     latitude: float
     longitude: float
     altitude: float | None = None
-
-    class Config:
-        schema_extra = {"example": {"latitude": 52.014, "longitude": 8.526, "altitude": 62.1}}
 
 
 @dataclass
@@ -89,7 +87,7 @@ class TTNMessage(BaseModel):
             device_brand=self.uplink_message.version_ids.brand_id,
             device_model=self.uplink_message.version_ids.model_id,
             time=min(
-                datetime.now(timezone.utc),
+                datetime.now(UTC),
                 self.received_at,
                 self.uplink_message.received_at,
                 *[x.time for x in self.uplink_message.rx_metadata if x is not None and x.time is not None],

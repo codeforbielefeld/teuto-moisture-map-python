@@ -23,7 +23,7 @@ def get_sensors_metadata():
         }
     except Exception as e:
         print(f"Error retrieving sensor metadata: {e}")
-        raise HTTPException(status_code=500, detail="Error retrieving sensor metadata")
+        raise HTTPException(status_code=500, detail="Error retrieving sensor metadata") from e
 
 
 def convert_dyno_to_plain(dynamo_item):
@@ -47,4 +47,4 @@ def write_sensor_metadata(sensor):
         return response
     except Exception as e:
         print(f"Error saving sensor metadata: {e}")
-        raise HTTPException(status_code=500, detail="Error saving sensor metadata")
+        raise HTTPException(status_code=500, detail="Error saving sensor metadata") from e

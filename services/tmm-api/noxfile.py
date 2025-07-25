@@ -18,7 +18,7 @@ def black(session):
 @nox.session(python=False)
 def ruff(session):
     session.run("uv", "sync", "--quiet", external=True)
-    session.run("uv", "run", "ruff", ".", external=True)
+    session.run("uv", "run", "ruff", "check", external=True)
 
 
 @nox.session(python=False)
