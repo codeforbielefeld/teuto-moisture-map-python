@@ -30,7 +30,7 @@ jobs:
         working-directory: "services/tmm-api"
         run: docker build -t ${TMM_API_IMAGE_NAME} .
       - name: Start service
-        run: docker-compose -f docker-compose.int-test.yaml up -d
+        run: docker compose -f docker-compose.int-test.yaml up -d
       - name: Check service is up
         # TODO: Add some propper tests.
         run: |
@@ -39,7 +39,7 @@ jobs:
           curl -f localhost:5000/internal/health/int
       - name: Service Logs
         if: failure()
-        run: docker-compose -f docker-compose.int-test.yaml logs
+        run: docker compose -f docker-compose.int-test.yaml logs
       - name: Stop service
         if: always()
-        run: docker-compose -f docker-compose.int-test.yaml down
+        run: docker compose -f docker-compose.int-test.yaml down
