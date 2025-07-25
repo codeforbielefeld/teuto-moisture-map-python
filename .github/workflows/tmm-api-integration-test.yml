@@ -28,7 +28,7 @@ jobs:
       - uses: buildpacks/github-actions/setup-pack@v4.8.1
       - name: Build tmm-api image
         working-directory: "services/tmm-api"
-        run: docker build -t ${TMM_API_IMAGE_NAME}
+        run: docker build -t ${TMM_API_IMAGE_NAME} .
       - name: Start service
         run: docker-compose -f docker-compose.int-test.yaml up -d
       - name: Check service is up
