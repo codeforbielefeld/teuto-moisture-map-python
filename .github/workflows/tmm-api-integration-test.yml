@@ -26,9 +26,9 @@ jobs:
           echo "TMM_API_IMAGE_NAME=${TMM_API_IMAGE_NAME}" >> $GITHUB_ENV
           echo "TMM_API_IMAGE_NAME=${TMM_API_IMAGE_NAME}" >> $GITHUB_OUTPUT
       - uses: buildpacks/github-actions/setup-pack@v4.8.1
-      - name: Build tmm-api image using buildpacks
+      - name: Build tmm-api image
         working-directory: "services/tmm-api"
-        run: pack build ${TMM_API_IMAGE_NAME} --buildpack paketo-buildpacks/python --builder gcr.io/paketo-buildpacks/builder:base
+        run: docker build -t ${TMM_API_IMAGE_NAME}
       - name: Start service
         run: docker-compose -f docker-compose.int-test.yaml up -d
       - name: Check service is up
