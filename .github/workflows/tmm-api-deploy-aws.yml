@@ -18,22 +18,19 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - name: Install poetry
-        run: pipx install poetry
-      - uses: actions/setup-python@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: "3.11"
-          cache: "poetry"
-      - run: poetry config virtualenvs.prefer-active-python true
-      - run: poetry install
+          version: "latest"
+      - run: uv sync
       - name: Tests
-        run: poetry run pytest
+        run: uv run pytest
       - name: Typing - mypy
-        run: poetry run mypy .
+        run: uv run mypy .
       - name: Lint - ruff
-        run: poetry run ruff .
+        run: uv run ruff .
       - name: Lint - black
-        run: poetry run black --check .
+        run: uv run black --check .
 
   deploy-dev:
     if: github.ref == 'refs/heads/main'
@@ -51,12 +48,11 @@ jobs:
         with:
           role-to-assume: ${{ secrets.LAMBDA_DEPLOY_ROLE }}
           aws-region: eu-central-1
-      - run: pipx install poetry
-      - uses: actions/setup-python@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: "3.11"
-          cache: "poetry"
-      - run: poetry config virtualenvs.prefer-active-python true
+          version: "latest"
+      - run: uv sync
       - run: make build
       - run: ENV=dev make deploy-lambda
       
@@ -76,11 +72,10 @@ jobs:
         with:
           role-to-assume: ${{ secrets.LAMBDA_DEPLOY_ROLE }}
           aws-region: eu-central-1
-      - run: pipx install poetry
-      - uses: actions/setup-python@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: "3.11"
-          cache: "poetry"
-      - run: poetry config virtualenvs.prefer-active-python true
+          version: "latest"
+      - run: uv sync
       - run: make build
       - run: ENV=prod make deploy-lambda

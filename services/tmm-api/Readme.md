@@ -2,22 +2,22 @@
 
 ## Requirements
 
-- [poetry](https://python-poetry.org) for local development
+- [uv](https://docs.astral.sh/uv/) for local development
 - [nox](https://nox.thea.codes/en/stable/) for running all checks in one go
 - [pack](https://buildpacks.io/docs/tools/pack/) for building the production image using buildpacks
 - docker
 
-## Doing things with poetry
+## Doing things with uv
 
-Run `poetry install` to install dependencies within a virtual environment managed by poetry.
+Run `uv sync` to install dependencies within a virtual environment managed by uv.
 
-Run `poetry shell` to spawn a shell with the created virtual environment for following commands or prefix each by `poetry run`
+Run `uv shell` to spawn a shell with the created virtual environment for following commands or prefix each by `uv run`
 
-Run `pytest` to run tests.
+Run `uv run pytest` to run tests.
 
-Run `black .` to format code using black.
+Run `uv run black .` to format code using black.
 
-Run `ruff . --fix` for linting.
+Run `uv run ruff . --fix` for linting.
 
 Run `mypy .` to run type checks.
 

@@ -5,33 +5,33 @@ nox.options.sessions = ["test", "black", "ruff", "typing"]
 
 @nox.session(python=False)
 def test(session):
-    session.run("poetry", "install", "--quiet", external=True)
-    session.run("poetry", "run", "pytest", external=True)
+    session.run("uv", "sync", "--quiet", external=True)
+    session.run("uv", "run", "pytest", external=True)
 
 
 @nox.session(python=False)
 def black(session):
-    session.run("poetry", "install", "--quiet", external=True)
-    session.run("poetry", "run", "black", "--check", ".", external=True)
+    session.run("uv", "sync", "--quiet", external=True)
+    session.run("uv", "run", "black", "--check", ".", external=True)
 
 
 @nox.session(python=False)
 def ruff(session):
-    session.run("poetry", "install", "--quiet", external=True)
-    session.run("poetry", "run", "ruff", ".", external=True)
+    session.run("uv", "sync", "--quiet", external=True)
+    session.run("uv", "run", "ruff", ".", external=True)
 
 
 @nox.session(python=False)
 def typing(session):
-    session.run("poetry", "install", "--quiet", external=True)
-    session.run("poetry", "run", "mypy", ".", external=True)
+    session.run("uv", "sync", "--quiet", external=True)
+    session.run("uv", "run", "mypy", ".", external=True)
 
 
 @nox.session(python=False)
 def serv(session):
-    session.run("poetry", "install", "--quiet", external=True)
+    session.run("uv", "sync", "--quiet", external=True)
     session.run(
-        "poetry",
+        "uv",
         "run",
         "uvicorn",
         "--host",

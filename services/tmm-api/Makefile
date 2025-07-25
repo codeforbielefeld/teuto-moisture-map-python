@@ -7,13 +7,14 @@ LAMBDA_SOURCE_BUCKET ?= tmm-api-$(ENV)-lambda-src
 
 build: dist/lambda_package.zip
 
-dist/lambda_package.zip: pyproject.toml poetry.lock $(shell find tmm_api)
+dist/lambda_package.zip: pyproject.toml uv.lock $(shell find tmm_api)
 
 	rm -rf dist
 
-	poetry build
+	uv build --wheel
 
-	poetry run pip install -t dist/lambda_package dist/*.whl 
+	uvx -p 3.11.13 pip install -t dist/lambda_package dist/*.whl 
+#	uv pip install -t dist/lambda_package dist/*.whl 
 
 	cd dist/lambda_package && \
 	zip -q -r ../lambda_package.zip . -x '*.pyc'	
