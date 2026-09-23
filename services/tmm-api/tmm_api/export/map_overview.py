@@ -55,6 +55,7 @@ def export_moisture_map_data(days: int = 1) -> MapData:
         |> last()
         |> pivot(rowKey: ["device"], columnKey: ["_field"], valueColumn: "_value")
         |> filter(fn: (r) => exists r.device and exists r.latitude and exists r.longitude and exists r.soil_moisture)
+        |> map(fn: (r) => ({{r with altitude: if exists r.altitude then r.altitude else ""}}))
         |> drop(columns: ["_measurement","_time", "device_brand", "device_model"])
         |> group(columns: ["device"])
 
@@ -66,6 +67,7 @@ def export_moisture_map_data(days: int = 1) -> MapData:
         |> last()
         |> pivot(rowKey: ["device","_time"], columnKey: ["_field"], valueColumn: "_value")
         |> filter(fn: (r) => exists r.device and exists r.latitude and exists r.longitude and exists r.soil_moisture)
+        |> map(fn: (r) => ({{r with altitude: if exists r.altitude then r.altitude else ""}}))
         |> drop(columns: ["_measurement", "device_brand", "device_model"])
         |> group(columns: ["device"])
 
@@ -122,4 +124,4 @@ def export_moisture_map_data(days: int = 1) -> MapData:
 
 
 def maybe_float(x) -> float | None:
-    return float(x) if x is not None else None
+    return float(x) if x not in (None, "") else None
