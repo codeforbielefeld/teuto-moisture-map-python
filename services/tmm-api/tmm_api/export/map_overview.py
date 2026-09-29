@@ -48,6 +48,7 @@ def export_moisture_map_data(days: int = 1) -> MapData:
 
     query = f"""
     import "join"
+    import "internal/debug"
     average = from(bucket: "{bucket}")
         |> range(start: {start})
         |> filter(fn: (r) => r["_measurement"] == "{measurement}")
@@ -56,6 +57,12 @@ def export_moisture_map_data(days: int = 1) -> MapData:
         |> pivot(rowKey: ["device"], columnKey: ["_field"], valueColumn: "_value")
         |> filter(fn: (r) => exists r.device and exists r.latitude and exists r.longitude and exists r.soil_moisture)
         |> map(fn: (r) => ({{r with altitude: if exists r.altitude then r.altitude else ""}}))
+        // optional fields must exist as columns, otherwise the join below fails
+        |> map(fn: (r) => ({{r with
+            soil_conductivity: if exists r.soil_conductivity then float(v: r.soil_conductivity) else debug.null(type: "float"),
+            soil_temperature: if exists r.soil_temperature then float(v: r.soil_temperature) else debug.null(type: "float"),
+            battery: if exists r.battery then float(v: r.battery) else debug.null(type: "float")
+        }}))
         |> drop(columns: ["_measurement","_time", "device_brand", "device_model"])
         |> group(columns: ["device"])
 
