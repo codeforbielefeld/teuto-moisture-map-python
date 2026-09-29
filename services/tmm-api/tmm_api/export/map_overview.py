@@ -87,8 +87,7 @@ def export_moisture_map_data(days: int = 1) -> MapData:
             record.values["device"]: record.values
             for table in average_results
             for record in table.records
-            if record.values.get("device") is not None
-            and record.values.get("soil_moisture") is not None
+            if record.values.get("device") is not None and record.values.get("soil_moisture") is not None
         }
 
         records: list[Record] = []
