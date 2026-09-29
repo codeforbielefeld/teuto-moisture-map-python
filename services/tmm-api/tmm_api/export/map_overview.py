@@ -46,53 +46,35 @@ class MapData:
 def export_moisture_map_data(days: int = 1) -> MapData:
     start = f"-{days}d"
 
-    query = f"""
-    import "join"
-    import "internal/debug"
-    average = from(bucket: "{bucket}")
+    # Optional fields (e.g. soil_conductivity) may be missing entirely in the
+    # queried range. Flux joins fail on missing columns, so we run two simple
+    # queries and merge them by device in Python instead.
+    average_query = f"""
+    from(bucket: "{bucket}")
         |> range(start: {start})
         |> filter(fn: (r) => r["_measurement"] == "{measurement}")
-        |> aggregateWindow(every: inf , fn: mean)
+        |> aggregateWindow(every: inf, fn: mean)
         |> last()
         |> pivot(rowKey: ["device"], columnKey: ["_field"], valueColumn: "_value")
-        |> filter(fn: (r) => exists r.device and exists r.latitude and exists r.longitude and exists r.soil_moisture)
-        |> map(fn: (r) => ({{r with altitude: if exists r.altitude then r.altitude else ""}}))
-        // optional fields must exist as columns, otherwise the join below fails
-        |> map(fn: (r) => ({{r with
-            soil_conductivity: if exists r.soil_conductivity then float(v: r.soil_conductivity) else debug.null(type: "float"),
-            soil_temperature: if exists r.soil_temperature then float(v: r.soil_temperature) else debug.null(type: "float"),
-            battery: if exists r.battery then float(v: r.battery) else debug.null(type: "float")
-        }}))
-        |> drop(columns: ["_measurement","_time", "device_brand", "device_model"])
+        |> drop(columns: ["_measurement", "_time", "device_brand", "device_model"])
         |> group(columns: ["device"])
+    """
 
-        //average |> yield (name: "average")
-
-        latest = from(bucket: "tmm-bucket")
+    latest_query = f"""
+    from(bucket: "{bucket}")
         |> range(start: {start})
         |> filter(fn: (r) => r["_measurement"] == "{measurement}")
         |> last()
-        |> pivot(rowKey: ["device","_time"], columnKey: ["_field"], valueColumn: "_value")
-        |> filter(fn: (r) => exists r.device and exists r.latitude and exists r.longitude and exists r.soil_moisture)
-        |> map(fn: (r) => ({{r with altitude: if exists r.altitude then r.altitude else ""}}))
+        |> pivot(rowKey: ["device", "_time"], columnKey: ["_field"], valueColumn: "_value")
         |> drop(columns: ["_measurement", "device_brand", "device_model"])
         |> group(columns: ["device"])
-
-        //latest |> yield(name: "latest")
-
-        joined = join.inner(
-            left: average,
-            right: latest,
-            on: (l, r) => l.device == r.device,
-            as: (l, r) => ({{r with last_update: r._time, avg_soil_moisture: l.soil_moisture, avg_soil_temperature: l.soil_temperature, avg_soil_conductivity: l.soil_conductivity, avg_battery: l.battery}}),
-        ) |> drop(columns: ["_time"])
-
-        joined |> yield(name: "joined")
     """
+
     with get_influx_client() as client:
-        logger.debug("Executing query to export map data")
+        logger.debug("Executing queries to export map data")
         query_api = client.query_api()
-        results = query_api.query(query=query)
+        average_results = query_api.query(query=average_query)
+        latest_results = query_api.query(query=latest_query)
         logger.debug("Retrieved results from InfluxDB")
         metadata = get_sensors_metadata()
         logger.debug(f"Retrieved metadata for {len(metadata)} sensors")
@@ -101,31 +83,53 @@ def export_moisture_map_data(days: int = 1) -> MapData:
             sensor = metadata.get(sensor_id)
             return sensor.get(field) if sensor else None
 
-        return MapData(
-            records=[
-                Record(
-                    device=record.values["device"],
-                    latitude=float(record.values["latitude"]),
-                    longitude=float(record.values["longitude"]),
-                    altitude=maybe_float(record.values.get("altitude")),
-                    soil_moisture=record.values["soil_moisture"],
-                    soil_conductivity=record.values.get("soil_conductivity"),
-                    soil_temperature=record.values.get("soil_temperature"),
-                    battery=record.values.get("battery"),
-                    avg_battery=record.values.get("avg_battery"),
-                    avg_soil_moisture=record.values["avg_soil_moisture"],
-                    avg_soil_conductivity=record.values.get("avg_soil_conductivity"),
-                    avg_soil_temperature=record.values.get("avg_soil_temperature"),
-                    last_update=record.values["last_update"],
-                    shaded=get_field(record.values["device"], "shaded"),
-                    depth_cm=get_field(record.values["device"], "depth_cm"),
-                    sealed_ground=get_field(record.values["device"], "sealed_ground"),
-                    note=get_field(record.values["device"], "note"),
-                    soil_note=get_field(record.values["device"], "soil_note"),
+        averages: dict[str, dict[str, typing.Any]] = {
+            record.values["device"]: record.values
+            for table in average_results
+            for record in table.records
+            if record.values.get("device") is not None
+            and record.values.get("soil_moisture") is not None
+        }
+
+        records: list[Record] = []
+        for table in latest_results:
+            for record in table.records:
+                values = record.values
+                device = values.get("device")
+                if (
+                    device is None
+                    or device not in averages
+                    or values.get("latitude") is None
+                    or values.get("longitude") is None
+                    or values.get("soil_moisture") is None
+                ):
+                    continue
+                avg = averages[device]
+                records.append(
+                    Record(
+                        device=device,
+                        latitude=float(values["latitude"]),
+                        longitude=float(values["longitude"]),
+                        altitude=maybe_float(values.get("altitude")),
+                        soil_moisture=values["soil_moisture"],
+                        soil_conductivity=values.get("soil_conductivity"),
+                        soil_temperature=values.get("soil_temperature"),
+                        battery=values.get("battery"),
+                        avg_battery=avg.get("battery"),
+                        avg_soil_moisture=avg["soil_moisture"],
+                        avg_soil_conductivity=avg.get("soil_conductivity"),
+                        avg_soil_temperature=avg.get("soil_temperature"),
+                        last_update=values["_time"],
+                        shaded=get_field(device, "shaded"),
+                        depth_cm=get_field(device, "depth_cm"),
+                        sealed_ground=get_field(device, "sealed_ground"),
+                        note=get_field(device, "note"),
+                        soil_note=get_field(device, "soil_note"),
+                    )
                 )
-                for result in results
-                for record in result.records
-            ],
+
+        return MapData(
+            records=records,
             timestamp=datetime.now().astimezone(ZoneInfo("Europe/Berlin")),
         )
 
